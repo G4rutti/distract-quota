@@ -48,16 +48,6 @@ export const LIMITS = {
   weeklyCut: 0.15,
 };
 
-/** Hábitos lidos do app de saúde (tabelas saude, treinos, treinos_relogio) e do GitHub. Nada é marcado à mão. */
-export const HABITS = {
-  sleepGoalMin: 420, // 7h
-  stepsGoal: 8000,
-  githubUser: "G4rutti",
-};
-
-/** Humor e disposição: um toque, de 1 a 5. */
-export const MOOD_LABELS = ["Péssimo", "Ruim", "Ok", "Bom", "Ótimo"] as const;
-export const ENERGY_LABELS = ["Zerado", "Baixa", "Normal", "Boa", "No talo"] as const;
 
 /** Opções de tempo na tela de liberar. */
 export const MINUTE_OPTIONS = [5, 10, 15, 30] as const;

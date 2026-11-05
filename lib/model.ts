@@ -1,7 +1,6 @@
 import "server-only";
-import { APP_IDS, HABITS, TIMEZONE, type AppId } from "./config";
+import { APP_IDS, TIMEZONE, type AppId } from "./config";
 import { db, type PassRow } from "./db";
-import { getHabitSources, type HabitSources, type Workout } from "./health";
 import { daysBetween, daysUntilNextWeek, perAppLimit, totalLimit, weekIndex } from "./limits";
 import { buildSessions, DAY, dayKey, fetchEvents, hourOf, MIN, minutesByDay, splitByDay, weekdayFmt } from "./stats";
 
@@ -30,12 +29,6 @@ export type DayStat = {
   blocked: number;
   giveUps: number;
   passes: number;
-  mood: number | null;
-  energy: number | null;
-  sleepMin: number | null;
-  steps: number | null;
-  workouts: Workout[];
-  pushes: number;
 };
 
 export type PassView = {
@@ -47,19 +40,6 @@ export type PassView = {
   createdAt: string;
   expiresAt: string;
   active: boolean;
-};
-
-export type HabitId = "sono" | "passos" | "treino" | "codigo";
-export type HabitDay = { key: string; value: number | null; done: boolean | null }; // null = sem dado
-export type Habit = {
-  id: HabitId;
-  name: string;
-  goal: string;
-  days: HabitDay[]; // 28 dias, mais antigo primeiro
-  today: string;
-  streak: number;
-  doneLast7: number;
-  hasData: boolean;
 };
 
 export type Insight = { title: string; value: string; detail: string };
@@ -77,8 +57,6 @@ export type Model = {
   hours: number[];
   passes: PassView[]; // mais recente primeiro
   activePass: Partial<Record<AppId, PassView>>;
-  habits: Habit[];
-  habitNotes: { lastHealthKey: string | null; githubOk: boolean; healthOk: boolean };
   report: WeekReport;
 };
 
@@ -93,9 +71,6 @@ export type WeekReport = {
   recoveredWeek: number | null;
   insights: Insight[];
 };
-
-/** 420 -> "7h", 450 -> "7h30". */
-const fmtHours = (min: number) => `${Math.floor(min / 60)}h${min % 60 ? String(min % 60).padStart(2, "0") : ""}`;
 
 const zeroApps = () => Object.fromEntries(APP_IDS.map((id) => [id, 0])) as Record<AppId, number>;
 
@@ -115,18 +90,15 @@ export async function getModel(): Promise<Model> {
   const fetchFrom = noonOf(addDays(historyStart, -1)).getTime() - 12 * 60 * MIN;
   const passesFrom = noonOf(addDays(windowStart, -1)).getTime() - 12 * 60 * MIN;
 
-  const [events, passRows, diary, sources] = await Promise.all([
+  const [events, passRows] = await Promise.all([
     fetchEvents(new Date(fetchFrom).toISOString()),
     db()
       .from("porteiro_passes")
       .select("*")
       .gte("created_at", new Date(passesFrom).toISOString())
       .order("created_at", { ascending: false }),
-    db().from("porteiro_diary").select("dia, humor, energia").gte("dia", windowStart),
-    getHabitSources(addDays(todayKey, -35)),
   ]);
   if (passRows.error) throw passRows.error;
-  if (diary.error) throw diary.error;
 
   const sessions = buildSessions(events, nowMs);
   const allMinutes = minutesByDay(sessions); // histórico inteiro, por dia
@@ -136,7 +108,6 @@ export async function getModel(): Promise<Model> {
   for (let i = 0; i < WINDOW_DAYS; i++) {
     const key = addDays(windowStart, i);
     const w = weekIndex(firstKey, key);
-    const h = sources.health.get(key);
     dayMap.set(key, {
       key,
       isToday: key === todayKey,
@@ -149,12 +120,6 @@ export async function getModel(): Promise<Model> {
       blocked: 0,
       giveUps: 0,
       passes: 0,
-      mood: null,
-      energy: null,
-      sleepMin: h?.sleepMin ?? null,
-      steps: h?.steps ?? null,
-      workouts: sources.workouts.filter((wk) => wk.key === key),
-      pushes: sources.pushes.get(key) ?? 0,
     });
   }
 
@@ -192,14 +157,6 @@ export async function getModel(): Promise<Model> {
     }
     if (t >= weekAgo) hours[hourOf(new Date(t))] += 1;
   });
-
-  for (const r of (diary.data ?? []) as { dia: string; humor: number | null; energia: number | null }[]) {
-    const d = dayMap.get(r.dia);
-    if (d) {
-      d.mood = r.humor;
-      d.energy = r.energia;
-    }
-  }
 
   // ---- passes ----
   const passes: PassView[] = ((passRows.data ?? []) as PassRow[]).map((p) => {
@@ -259,84 +216,8 @@ export async function getModel(): Promise<Model> {
     hours,
     passes,
     activePass,
-    habits: buildHabits(days.slice(-28), sources),
-    habitNotes: { lastHealthKey: sources.lastHealthKey, githubOk: sources.githubOk, healthOk: sources.healthOk },
     report: buildReport(days, allMinutes, passes, hours, firstKey, todayKey),
   };
-}
-
-// ---------------- hábitos ----------------
-
-function buildHabits(days: DayStat[], sources: HabitSources): Habit[] {
-  const fmtH = (min: number) => `${Math.floor(min / 60)}h${String(Math.round(min % 60)).padStart(2, "0")}`;
-  const fmtSteps = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(1).replace(".", ",")} mil` : String(n));
-
-  const make = (
-    id: HabitId,
-    name: string,
-    goal: string,
-    pick: (d: DayStat) => { value: number | null; done: boolean | null },
-    todayText: (d: DayStat, v: number | null) => string,
-  ): Habit => {
-    const hd = days.map((d) => ({ key: d.key, ...pick(d) }));
-    let streak = 0;
-    // hoje ainda pode acontecer: conta de hoje se feito, senão começa de ontem
-    const start = hd[hd.length - 1].done ? hd.length - 1 : hd.length - 2;
-    for (let i = start; i >= 0 && hd[i].done; i--) streak++;
-    const last = days[days.length - 1];
-    return {
-      id,
-      name,
-      goal,
-      days: hd,
-      today: todayText(last, hd[hd.length - 1].value),
-      streak,
-      doneLast7: hd.slice(-7).filter((x) => x.done).length,
-      hasData: hd.some((x) => x.done !== null),
-    };
-  };
-
-  const healthHasDay = (d: DayStat) => sources.health.has(d.key);
-
-  return [
-    make(
-      "sono",
-      "Sono",
-      `${fmtHours(HABITS.sleepGoalMin)} ou mais`,
-      (d) => ({ value: d.sleepMin, done: d.sleepMin === null ? null : d.sleepMin >= HABITS.sleepGoalMin }),
-      (d) => (d.sleepMin === null ? "Sem dado do relógio" : `Dormiu ${fmtH(d.sleepMin)}`),
-    ),
-    make(
-      "passos",
-      "Passos",
-      `${fmtSteps(HABITS.stepsGoal)} por dia`,
-      (d) => ({ value: d.steps, done: d.steps === null ? null : d.steps >= HABITS.stepsGoal }),
-      (d) => (d.steps === null ? "Sem dado do relógio" : `${fmtSteps(d.steps)} passos`),
-    ),
-    make(
-      "treino",
-      "Treino",
-      "Academia ou treino no relógio",
-      (d) => ({
-        value: d.workouts.length,
-        // sem treino só conta como "não feito" se o relógio mandou dado naquele dia; senão é "sem dado"
-        done: d.workouts.length > 0 ? true : healthHasDay(d) ? false : null,
-      }),
-      (d) => (d.workouts.length ? d.workouts.map((wk) => wk.label).join(", ") : "Nenhum treino registrado"),
-    ),
-    make(
-      "codigo",
-      "Programação",
-      "Push no GitHub",
-      (d) => ({ value: d.pushes, done: sources.githubOk ? d.pushes > 0 : null }),
-      (d) =>
-        !sources.githubOk
-          ? "GitHub indisponível"
-          : d.pushes
-            ? `${d.pushes} ${d.pushes === 1 ? "push" : "pushes"}`
-            : "Nenhum push",
-    ),
-  ];
 }
 
 // ---------------- insights ----------------
@@ -437,27 +318,6 @@ function buildReport(
     });
   }
 
-  const sleepSplit = splitBy(complete.slice(-28), (d) => (d.sleepMin === null ? null : d.sleepMin >= HABITS.sleepGoalMin));
-  if (sleepSplit) {
-    // o app de saúde grava o sono no dia em que você acordou, então é o mesmo dia da tela
-    const diff = Math.round(sleepSplit.no - sleepSplit.yes);
-    const goal = fmtHours(HABITS.sleepGoalMin);
-    insights.push({
-      title: "Sono x tela",
-      value: diff === 0 ? "Mesmo tempo" : diff > 0 ? `${m(diff)} a menos` : `${m(-diff)} a mais`,
-      detail: `de redes nos dias em que você dormiu ${goal} ou mais (${m(sleepSplit.yes)} contra ${m(sleepSplit.no)}).`,
-    });
-  }
-
-  const moodSplit = splitBy(complete.slice(-28), (d) => (d.mood === null ? null : d.mood >= 4));
-  if (moodSplit) {
-    insights.push({
-      title: "Humor x tela",
-      value: `${m(moodSplit.yes)} contra ${m(moodSplit.no)}`,
-      detail: "de redes em média nos dias de humor bom ou ótimo, contra os outros dias.",
-    });
-  }
-
   return {
     enoughData: complete.length >= 1,
     thisWeek,
@@ -469,39 +329,4 @@ function buildReport(
     recoveredWeek,
     insights,
   };
-}
-
-/** Média de minutos de tela nos dias em que o critério é verdadeiro x falso; exige 3 dias de cada lado. */
-function splitBy(days: DayStat[], pick: (d: DayStat) => boolean | null) {
-  const yes = days.filter((d) => pick(d) === true);
-  const no = days.filter((d) => pick(d) === false);
-  if (yes.length < 3 || no.length < 3) return null;
-  const avg = (arr: DayStat[]) => arr.reduce((a, d) => a + d.minutes, 0) / arr.length;
-  return { yes: avg(yes), no: avg(no) };
-}
-
-// ---------------- diário ----------------
-
-/** Frases do resumo automático de um dia. */
-export function diaryLines(d: DayStat): string[] {
-  const lines: string[] = [];
-  const r = Math.round;
-  if (d.tracked) {
-    const over = d.minutes - d.limit;
-    lines.push(
-      over > 0
-        ? `${r(d.minutes)} min de redes, ${r(over)} acima do limite de ${d.limit}.`
-        : `${r(d.minutes)} min de redes, dentro do limite de ${d.limit}.`,
-    );
-    if (d.blocked) {
-      lines.push(
-        `${d.blocked} ${d.blocked === 1 ? "vez barrado" : "vezes barrado"} na porta${d.giveUps ? `, desistiu em ${d.giveUps}` : ""}.`,
-      );
-    }
-  }
-  if (d.sleepMin !== null) lines.push(`Dormiu ${Math.floor(d.sleepMin / 60)}h${String(d.sleepMin % 60).padStart(2, "0")}.`);
-  if (d.steps !== null) lines.push(`${d.steps.toLocaleString("pt-BR")} passos.`);
-  if (d.workouts.length) lines.push(`Treinou: ${d.workouts.map((w) => w.label).join(", ")}.`);
-  if (d.pushes) lines.push(`${d.pushes} ${d.pushes === 1 ? "push" : "pushes"} no GitHub.`);
-  return lines;
 }

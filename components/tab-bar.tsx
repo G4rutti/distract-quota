@@ -2,13 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpenText, ChartLineUp, CheckCircle, DeviceMobile, House } from "@phosphor-icons/react";
+import { ChartLineUp, DeviceMobile, House } from "@phosphor-icons/react";
 
 const TABS = [
   { href: "/", label: "Hoje", Icon: House },
   { href: "/apps", label: "Apps", Icon: DeviceMobile },
-  { href: "/habitos", label: "Hábitos", Icon: CheckCircle },
-  { href: "/diario", label: "Diário", Icon: BookOpenText },
   { href: "/insights", label: "Insights", Icon: ChartLineUp },
 ];
 
@@ -24,7 +22,7 @@ export function TabBar() {
       aria-label="Seções"
       className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-bg/95 pb-[env(safe-area-inset-bottom)] backdrop-blur"
     >
-      <ul className="mx-auto grid max-w-[460px] grid-cols-5">
+      <ul className="mx-auto grid max-w-[460px] grid-cols-3">
         {TABS.map(({ href, label, Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
