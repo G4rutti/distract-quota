@@ -1,0 +1,84 @@
+@import "tailwindcss";
+
+/* Base fria (sem bege), um acento só: verde de "passe liberado".
+   Claro e escuro seguem o sistema. Raio único: 14px. */
+:root {
+  --bg: oklch(0.985 0.003 250);
+  --surface: oklch(0.955 0.005 250);
+  --line: oklch(0.885 0.006 250);
+  --text: oklch(0.21 0.012 255);
+  --muted: oklch(0.46 0.012 255);
+  --accent: oklch(0.5 0.14 140);
+  --accent-ink: oklch(0.99 0.004 140);
+  --accent-soft: oklch(0.5 0.14 140 / 0.12);
+  --radius: 14px;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: oklch(0.16 0.008 255);
+    --surface: oklch(0.205 0.01 255);
+    --line: oklch(0.3 0.01 255);
+    --text: oklch(0.95 0.005 255);
+    --muted: oklch(0.72 0.01 255);
+    --accent: oklch(0.87 0.19 128);
+    --accent-ink: oklch(0.2 0.04 130);
+    --accent-soft: oklch(0.87 0.19 128 / 0.14);
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-line: var(--line);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --radius-ui: var(--radius);
+  --font-sans: var(--font-geist-sans), ui-sans-serif, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+}
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+}
+
+.press {
+  transition: transform 120ms cubic-bezier(0.2, 0, 0, 1), background-color 160ms ease, color 160ms ease;
+}
+.press:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .press,
+  .press:active {
+    transition: none;
+    transform: none;
+  }
+}
