@@ -1,6 +1,6 @@
 import "server-only";
 import { APP_IDS, TIMEZONE, type AppId } from "./config";
-import { db, type PassRow } from "./db";
+import { db, type EventRow, type PassRow } from "./db";
 import { daysBetween, daysUntilNextWeek, perAppLimit, totalLimit, weekIndex } from "./limits";
 import { buildSessions, DAY, dayKey, fetchEvents, hourOf, MIN, minutesByDay, splitByDay, weekdayFmt } from "./stats";
 
@@ -136,6 +136,15 @@ export async function getModel(): Promise<Model> {
   const hours = Array.from({ length: 24 }, () => 0);
   const weekAgo = nowMs - 7 * DAY;
   const lastBlocked = new Map<string, number>();
+  // No Chrome, cada volta pra aba do app vira um "abriu" novo; voltar até 5 min depois de sair não é tentativa nova.
+  const lastChromeClose = new Map<string, number>();
+  const chromeReturn = new Set<EventRow>();
+  for (const e of events) {
+    if (e.source !== "chrome") continue;
+    const t = Date.parse(e.at);
+    if (e.kind === "close") lastChromeClose.set(e.app, t);
+    else if (e.allowed && t - (lastChromeClose.get(e.app) ?? -Infinity) <= 5 * MIN) chromeReturn.add(e);
+  }
   const opens = events.filter((e) => e.kind === "open");
   opens.forEach((e, i) => {
     const t = Date.parse(e.at);
@@ -153,6 +162,7 @@ export async function getModel(): Promise<Model> {
     } else {
       // liberada logo depois de uma barrada é a mesma tentativa
       if (t - (lastBlocked.get(e.app) ?? -Infinity) <= 5 * MIN) return;
+      if (chromeReturn.has(e)) return;
       if (d) d.attempts += 1;
     }
     if (t >= weekAgo) hours[hourOf(new Date(t))] += 1;

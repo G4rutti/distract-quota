@@ -82,6 +82,21 @@ Repita trocando `tiktok` por `instagram`.
 4. Abre o TikTok e **bloqueia a tela** dentro dele. Desbloqueia, sai do app e confere se o tempo bateu. Se o iOS não disparar "ao fechar" no bloqueio, a sessão fica sem fechamento e o Porteiro estima até a próxima abertura (máximo 180 min).
 5. Abre o TikTok tocando numa **notificação**: o "ao abrir" tem que rodar também.
 
+## 5. Extensão do Chrome
+
+Mesma porta e mesmo passe no computador (liberou no iPhone, vale no PC e vice-versa). Os minutos somam no mesmo limite.
+
+1. `chrome://extensions` > liga **Modo do desenvolvedor** > **Carregar sem compactação** > escolhe a pasta `extension/`.
+2. Clica no ícone do Porteiro, cola o `APP_SECRET` e salva. Tem que aparecer "Porta ligada".
+3. Faz login no Porteiro uma vez nesse Chrome (a porta abre no navegador).
+4. Opcional, mas fecha a porta dos fundos: no card da extensão, liga **Permitir no modo anônimo**.
+
+Como conta:
+- Só com a aba do app ativa, a janela em foco e você mexendo nos últimos 2 min (ou a aba tocando som).
+- Trocou de aba e voltou em até 10 s: mesma sessão.
+- Chrome fechado ou notebook dormindo com o app aberto: fecha na última vez em que foi visto, não quando você volta.
+- **Expulsar quando o passe acabar** (liga/desliga no popup): fecha a sessão e manda a aba pra porta.
+
 ## Ajustes
 
 Tudo em `lib/config.ts`:

@@ -16,6 +16,10 @@
       <p id="status-sub" class="muted"></p>
     </section>
 
+    <p id="incognito" class="warn" hidden>
+      A aba anônima é uma porta dos fundos: em chrome://extensions, abre o Porteiro e liga "Permitir no modo anônimo".
+    </p>
+
     <form id="config">
       <div class="field">
         <label for="key">Segredo</label>
@@ -30,14 +34,6 @@
           <span class="muted">Fecha a sessão e volta pra porta na hora.</span>
         </span>
       </label>
-
-      <details>
-        <summary>Avançado</summary>
-        <div class="field">
-          <label for="base">Endereço do Porteiro</label>
-          <input id="base" type="url" spellcheck="false" />
-        </div>
-      </details>
 
       <button type="submit">Salvar</button>
       <p id="saved" class="muted" role="status"></p>

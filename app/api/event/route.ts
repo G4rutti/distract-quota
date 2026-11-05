@@ -19,14 +19,25 @@ async function handle(req: NextRequest) {
   if (!isAppId(app)) return new NextResponse("app desconhecido", { status: 400 });
 
   const source = parseSource(req.nextUrl.searchParams.get("src"));
-  // A extensão pode mandar a hora real do fechamento (?at=), quando o Chrome foi fechado com o app aberto
-  // e ela só consegue avisar na próxima vez que abrir. Só vale pra extensão, nas últimas 12h e nunca no futuro.
+  // A extensão manda há quantos ms parou de usar (?ago=), e a hora é calculada com o relógio do servidor:
+  // relógio do PC adiantado ou atrasado não importa. Limitado a 12 h atrás e nunca antes do último "abriu"
+  // da extensão nesse app, pra o par abriu/fechou não inverter.
   let at: string | undefined;
-  const rawAt = req.nextUrl.searchParams.get("at");
-  if (source === "chrome" && rawAt) {
-    const t = Date.parse(rawAt);
-    const now = Date.now();
-    if (Number.isFinite(t) && t <= now && now - t <= 12 * 60 * 60_000) at = new Date(t).toISOString();
+  const ago = Number(req.nextUrl.searchParams.get("ago"));
+  if (source === "chrome" && Number.isFinite(ago) && ago > 0) {
+    let t = Date.now() - Math.min(ago, 12 * 60 * 60_000);
+    const { data: lastOpen } = await db()
+      .from("porteiro_events")
+      .select("at")
+      .eq("app", app)
+      .eq("source", "chrome")
+      .eq("kind", "open")
+      .order("at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const openAt = lastOpen ? Date.parse((lastOpen as { at: string }).at) : NaN;
+    if (Number.isFinite(openAt) && t <= openAt) t = openAt + 1;
+    at = new Date(t).toISOString();
   }
 
   const { error } = await db().from("porteiro_events").insert({ app, kind: "close", source, ...(at ? { at } : {}) });

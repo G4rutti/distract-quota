@@ -11,7 +11,7 @@ type Props = { name: string; openUrl: string; schemeUrl: string };
  */
 export function OpenAppLinks({ name, openUrl, schemeUrl }: Props) {
   const [standalone, setStandalone] = useState(false);
-  const [ios, setIos] = useState(true);
+  const [ios, setIos] = useState(false); // começa escondido: no PC o link não pisca
 
   useEffect(() => {
     const nav = navigator as Navigator & { standalone?: boolean };

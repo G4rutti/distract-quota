@@ -147,3 +147,11 @@ button:active {
   min-height: 1em;
   font-size: 12px;
 }
+
+.warn {
+  margin: -4px 0 16px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 12px;
+}

@@ -1,4 +1,4 @@
-import { api, APPS, DEFAULT_BASE, getConfig } from "./shared.js";
+import { api, APPS, getConfig } from "./shared.js";
 
 const $ = (id) => document.getElementById(id);
 const timeFmt = new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" });
@@ -7,8 +7,8 @@ async function load() {
   const cfg = await getConfig();
   $("key").value = cfg.key;
   $("expel").checked = cfg.expel;
-  $("base").value = cfg.base;
   $("painel").href = cfg.base;
+  $("incognito").hidden = await chrome.extension.isAllowedIncognitoAccess();
   await renderStatus();
 }
 
@@ -21,28 +21,31 @@ async function renderStatus() {
   }
   const { current } = await chrome.storage.local.get({ current: null });
   if (!current) {
-    $("status-main").textContent = "Porta fechada";
-    $("status-sub").textContent = "Nenhuma rede social aberta agora.";
+    $("status-main").textContent = "Nada em uso agora";
+    $("status-sub").textContent = "Abriu TikTok, Instagram ou X, a porta confere o passe.";
     return;
   }
   const name = APPS[current.app]?.name ?? current.app;
-  $("status-main").textContent = `${name} liberado`;
   const r = await api("/api/pass-status", { app: current.app });
-  try {
-    const body = JSON.parse(r.text);
-    $("status-sub").textContent = body.active
-      ? `Passe até ${timeFmt.format(new Date(body.expiresAt))}.`
-      : "O passe acabou.";
-  } catch {
+  if (!r.ok) {
+    $("status-main").textContent = `${name} aberto`;
     $("status-sub").textContent = r.status === 401 ? "Segredo errado." : "Sem conexão com o Porteiro.";
+    return;
+  }
+  const body = JSON.parse(r.text);
+  if (body.active) {
+    $("status-main").textContent = `${name} liberado`;
+    $("status-sub").textContent = `Passe até ${timeFmt.format(new Date(body.expiresAt))}.`;
+  } else {
+    $("status-main").textContent = `${name} aberto, passe vencido`;
+    $("status-sub").textContent = "Liga o expulsar aqui embaixo pra porta fechar sozinha.";
   }
 }
 
 $("config").addEventListener("submit", async (e) => {
   e.preventDefault();
   const key = $("key").value.trim();
-  const base = ($("base").value.trim() || DEFAULT_BASE).replace(/\/+$/, "");
-  await chrome.storage.local.set({ key, base, expel: $("expel").checked });
+  await chrome.storage.local.set({ key, expel: $("expel").checked });
 
   // confere o segredo de verdade antes de dizer que salvou
   const r = await api("/api/pass-status", { app: "tiktok" });
@@ -53,7 +56,6 @@ $("config").addEventListener("submit", async (e) => {
       : r.status === 401
         ? "Salvo, mas o segredo tá errado."
         : "Salvo, mas não consegui falar com o Porteiro.";
-  $("painel").href = base;
   await chrome.runtime.sendMessage({ type: "sync" }).catch(() => {});
   await renderStatus();
 });
