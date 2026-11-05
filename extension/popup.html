@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <title>Porteiro</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Porteiro</h1>
+      <a id="painel" href="#" target="_blank" rel="noopener">Abrir painel</a>
+    </header>
+
+    <section id="status" aria-live="polite">
+      <p id="status-main">Carregando...</p>
+      <p id="status-sub" class="muted"></p>
+    </section>
+
+    <form id="config">
+      <div class="field">
+        <label for="key">Segredo</label>
+        <input id="key" type="password" autocomplete="off" spellcheck="false" aria-describedby="key-help" />
+        <p id="key-help" class="muted">O mesmo APP_SECRET do login e dos atalhos do iPhone.</p>
+      </div>
+
+      <label class="toggle">
+        <input id="expel" type="checkbox" />
+        <span>
+          <strong>Expulsar quando o passe acabar</strong>
+          <span class="muted">Fecha a sessão e volta pra porta na hora.</span>
+        </span>
+      </label>
+
+      <details>
+        <summary>Avançado</summary>
+        <div class="field">
+          <label for="base">Endereço do Porteiro</label>
+          <input id="base" type="url" spellcheck="false" />
+        </div>
+      </details>
+
+      <button type="submit">Salvar</button>
+      <p id="saved" class="muted" role="status"></p>
+    </form>
+
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

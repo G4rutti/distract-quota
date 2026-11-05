@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { isValidKey, KEY_HEADER } from "@/lib/auth";
 import { isAppId } from "@/lib/config";
-import { db } from "@/lib/db";
+import { db, parseSource } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
   }
 
   const allowed = Boolean(pass);
-  const { error: insertError } = await db().from("porteiro_events").insert({ app, kind: "open", allowed, at: now });
+  const { error: insertError } = await db().from("porteiro_events").insert({ app, kind: "open", allowed, at: now, source: parseSource(req.nextUrl.searchParams.get("src")) });
   if (insertError) console.error("gate: erro gravando evento", insertError);
 
   return text(allowed ? "liberado" : "barrado");

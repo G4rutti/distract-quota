@@ -11,10 +11,13 @@ type Props = { name: string; openUrl: string; schemeUrl: string };
  */
 export function OpenAppLinks({ name, openUrl, schemeUrl }: Props) {
   const [standalone, setStandalone] = useState(false);
+  const [ios, setIos] = useState(true);
 
   useEffect(() => {
     const nav = navigator as Navigator & { standalone?: boolean };
     setStandalone(nav.standalone === true || window.matchMedia("(display-mode: standalone)").matches);
+    // iPad novo se apresenta como Mac, mas tem toque
+    setIos(/iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
   }, []);
 
   const primary = standalone ? schemeUrl : openUrl;
@@ -28,9 +31,12 @@ export function OpenAppLinks({ name, openUrl, schemeUrl }: Props) {
       >
         Abrir o {name}
       </a>
-      <a href={fallback} className="flex min-h-11 items-center justify-center text-sm text-muted underline underline-offset-4">
-        Abriu o site em vez do app? Tenta por aqui
-      </a>
+      {/* no computador não tem app pra abrir: o link reserva só faz sentido no iPhone */}
+      {ios && (
+        <a href={fallback} className="flex min-h-11 items-center justify-center text-sm text-muted underline underline-offset-4">
+          Abriu o site em vez do app? Tenta por aqui
+        </a>
+      )}
     </div>
   );
 }

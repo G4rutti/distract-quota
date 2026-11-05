@@ -156,7 +156,7 @@ export function EntryFlow({ app, todayMinutes, goal, last }: Props) {
         <h1 ref={headingRef} tabIndex={-1} className="text-3xl font-semibold tracking-tight outline-none">
           Liberado até {expiresAt ? timeFmt.format(new Date(expiresAt)) : ""}
         </h1>
-        <p className="text-muted">Quando acabar, ninguém te tira de lá. Sair na hora fica contigo.</p>
+        <p className="text-muted">No celular, sair na hora fica contigo. No computador, a extensão fecha quando acabar.</p>
       </div>
       <OpenAppLinks name={app.name} openUrl={app.openUrl} schemeUrl={app.schemeUrl} />
     </main>

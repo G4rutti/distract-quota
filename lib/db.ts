@@ -24,7 +24,13 @@ export type EventRow = {
   kind: "open" | "close";
   allowed: boolean | null;
   at: string;
+  source?: Source;
 };
+
+export type Source = "iphone" | "chrome";
+
+/** Origem vinda da URL dos Atalhos/extensão (?src=chrome); qualquer outra coisa é iPhone. */
+export const parseSource = (v: string | null): Source => (v === "chrome" ? "chrome" : "iphone");
 
 export type PassRow = {
   id: number;

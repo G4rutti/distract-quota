@@ -1,7 +1,7 @@
 import "server-only";
 import { MAX_SESSION_MIN, TIMEZONE, type AppId } from "./config";
 import { totalLimit, weekIndex } from "./limits";
-import { db, type EventRow, type PassRow } from "./db";
+import { db, type EventRow, type PassRow, type Source } from "./db";
 
 export const MIN = 60_000;
 export const DAY = 24 * 60 * MIN;
@@ -27,14 +27,14 @@ export function startOfToday(nowMs: number): Date {
 }
 export const hourOf = (d: Date) => Number(hourFmt.format(d)) % 24;
 
-export type Session = { app: AppId; start: number; end: number; minutes: number; live: boolean };
+export type Session = { app: AppId; source: Source; start: number; end: number; minutes: number; live: boolean };
 
 export async function fetchEvents(sinceIso: string): Promise<EventRow[]> {
   const rows: EventRow[] = [];
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await db()
       .from("porteiro_events")
-      .select("id, app, kind, allowed, at")
+      .select("id, app, kind, allowed, at, source")
       .gte("at", sinceIso)
       .order("at", { ascending: true })
       .order("id", { ascending: true })
@@ -46,39 +46,46 @@ export async function fetchEvents(sinceIso: string): Promise<EventRow[]> {
 }
 
 /**
- * Abertura liberada + próximo fechamento do mesmo app = uma sessão.
+ * Abertura liberada + próximo fechamento do mesmo app NA MESMA ORIGEM = uma sessão.
+ * iPhone e Chrome têm sessões independentes: TikTok aberto nos dois ao mesmo tempo conta nos dois.
  * Abertura sem fechamento (atalho de fechar falhou) vira sessão estimada com teto MAX_SESSION_MIN,
  * terminando no próximo evento daquele app, no teto ou agora, o que vier primeiro.
  */
 export function buildSessions(events: EventRow[], now: number): Session[] {
   const sessions: Session[] = [];
-  const pending = new Map<string, number>();
+  const pending = new Map<string, number>(); // chave "app:origem"
   const cap = MAX_SESSION_MIN * MIN;
+  const keyOf = (e: EventRow) => `${e.app}:${e.source ?? "iphone"}`;
+  const split = (k: string) => {
+    const [app, source] = k.split(":");
+    return { app: app as AppId, source: source as Source };
+  };
 
-  const closeEstimated = (app: string, start: number, until: number) => {
+  const closeEstimated = (k: string, start: number, until: number) => {
     const end = Math.min(until, start + cap);
-    if (end > start) sessions.push({ app: app as AppId, start, end, minutes: (end - start) / MIN, live: end === now });
+    if (end > start) sessions.push({ ...split(k), start, end, minutes: (end - start) / MIN, live: end === now });
   };
 
   for (const e of events) {
     const t = Date.parse(e.at);
+    const k = keyOf(e);
     if (e.kind === "open") {
       // qualquer abertura (liberada ou barrada) encerra uma pendente que perdeu o close;
       // senão o close de uma barrada casaria com uma abertura velha e inflaria o tempo
-      const prev = pending.get(e.app);
-      if (prev !== undefined) closeEstimated(e.app, prev, t);
-      pending.delete(e.app);
-      if (e.allowed) pending.set(e.app, t);
+      const prev = pending.get(k);
+      if (prev !== undefined) closeEstimated(k, prev, t);
+      pending.delete(k);
+      if (e.allowed) pending.set(k, t);
       continue;
     }
-    const start = pending.get(e.app);
+    const start = pending.get(k);
     if (start === undefined) continue; // close de uma abertura barrada
-    pending.delete(e.app);
+    pending.delete(k);
     // sessão com close é real, sem teto: pediu 10 e ficou 4h tem que aparecer
-    sessions.push({ app: e.app as AppId, start, end: t, minutes: (t - start) / MIN, live: false });
+    sessions.push({ ...split(k), start, end: t, minutes: (t - start) / MIN, live: false });
   }
 
-  for (const [app, start] of pending) closeEstimated(app, start, now);
+  for (const [k, start] of pending) closeEstimated(k, start, now);
   return sessions.sort((a, b) => a.start - b.start);
 }
 

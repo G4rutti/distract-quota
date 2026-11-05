@@ -9,6 +9,8 @@ export type AppConfig = {
   openUrl: string;
   /** Plano B caso o universal link caia no site em vez do app. */
   schemeUrl: string;
+  /** Domínios do site; a extensão do Chrome usa a mesma lista. */
+  domains: string[];
 };
 
 export const APPS: Record<AppId, AppConfig> = {
@@ -17,22 +19,41 @@ export const APPS: Record<AppId, AppConfig> = {
     name: "TikTok",
     openUrl: "https://www.tiktok.com/",
     schemeUrl: "snssdk1233://",
+    domains: ["tiktok.com"],
   },
   instagram: {
     id: "instagram",
     name: "Instagram",
     openUrl: "https://www.instagram.com/",
     schemeUrl: "instagram://",
+    domains: ["instagram.com"],
   },
   twitter: {
     id: "twitter",
     name: "X",
     openUrl: "https://x.com/",
     schemeUrl: "twitter://",
+    domains: ["x.com", "twitter.com"],
   },
 };
 
 export const APP_IDS = Object.keys(APPS) as AppId[];
+
+/**
+ * URL de volta mandada pela extensão (?volta=): só aceita https num domínio do próprio app,
+ * pra a porta não virar redirecionador pra qualquer site.
+ */
+export function safeReturnUrl(app: AppId, raw: string | undefined): string | null {
+  if (!raw) return null;
+  try {
+    const u = new URL(raw);
+    const host = u.hostname.toLowerCase();
+    const ok = u.protocol === "https:" && APPS[app].domains.some((d) => host === d || host.endsWith(`.${d}`));
+    return ok ? u.toString() : null;
+  } catch {
+    return null;
+  }
+}
 
 export function isAppId(value: unknown): value is AppId {
   return typeof value === "string" && Object.hasOwn(APPS, value);
