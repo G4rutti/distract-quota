@@ -92,7 +92,7 @@ Tudo em `lib/config.ts`:
 | Opções de tempo do passe | 5, 10, 15, 30 min |
 | Espera antes de liberar | 10 s |
 | Sessão sem fechamento descartada após | 180 min |
-| Apps e links de abertura | TikTok, Instagram |
+| Apps e links de abertura | TikTok, Instagram, X (Twitter) |
 
 Pra adicionar outro app: inclua o id no tipo `AppId` e em `APPS` (`lib/config.ts`) e crie as duas automações dele. O resto (painel, setup, gate) lê dessa lista, e o banco aceita qualquer id.
 

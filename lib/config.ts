@@ -1,6 +1,6 @@
 // Tudo que você vai querer ajustar fica aqui.
 
-export type AppId = "tiktok" | "instagram";
+export type AppId = "tiktok" | "instagram" | "twitter";
 
 export type AppConfig = {
   id: AppId;
@@ -23,6 +23,12 @@ export const APPS: Record<AppId, AppConfig> = {
     name: "Instagram",
     openUrl: "https://www.instagram.com/",
     schemeUrl: "instagram://",
+  },
+  twitter: {
+    id: "twitter",
+    name: "X",
+    openUrl: "https://x.com/",
+    schemeUrl: "twitter://",
   },
 };
 
