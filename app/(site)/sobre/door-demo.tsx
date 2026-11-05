@@ -64,7 +64,7 @@ export function DoorDemo() {
   return (
     <div className="grid items-start gap-10 md:grid-cols-[minmax(0,340px)_minmax(0,1fr)] md:gap-16">
       {/* o celular */}
-      <div className="mx-auto w-full max-w-[340px] rounded-[44px] border border-line bg-surface p-3 shadow-[0_30px_60px_-40px_rgb(0_0_0/0.5)]">
+      <div data-phone className="mx-auto w-full max-w-[340px] rounded-[44px] border border-line bg-surface p-3 shadow-[0_30px_60px_-40px_rgb(0_0_0/0.5)]">
         <div className="flex min-h-[560px] flex-col rounded-[34px] bg-bg px-6 pb-6 pt-10">
           {step === "home" && (
             <div className="flex flex-1 flex-col gap-8">
@@ -198,7 +198,7 @@ export function DoorDemo() {
       </div>
 
       {/* a impressora do passe */}
-      <div className="flex min-w-0 flex-col gap-6 md:pt-10">
+      <div data-printer className="flex min-w-0 flex-col gap-6 md:pt-10">
         <div className="mx-auto w-full max-w-[380px]">
           <div className="lp-slot" />
           <div className="lp-ticket-clip min-h-[420px]">

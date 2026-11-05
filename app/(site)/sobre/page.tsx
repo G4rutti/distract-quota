@@ -4,7 +4,9 @@ import { ArrowDown, ArrowUpRight, GithubLogo } from "@phosphor-icons/react/dist/
 import { LIMITS } from "@/lib/config";
 import { perAppLimit } from "@/lib/limits";
 import { DoorDemo } from "./door-demo";
-import { ExtensionDemo, HeroCountdown, LimitBars, Rise, SwapPill } from "./motion";
+import { ExtensionDemo, LimitBars, Rise } from "./motion";
+import { HeroPass, ScrollFX, Spotlight, SwapPill, Ticker } from "./fx";
+import { IntroGate } from "./intro-gate";
 
 const REPO = "https://github.com/G4rutti/distract-quota";
 
@@ -28,6 +30,8 @@ const FLOW = `abre o TikTok ─▶ automação "Ao abrir" ─▶ GET /api/gate?a
 
 fecha o TikTok ─▶ automação "Ao fechar" ─▶ GET /api/event?app=tiktok`;
 
+const INTENTS = ["Responder DM", "5 min", "Postar algo", "10 min", "Ver algo que me mandaram", "15 min", "Só passar o tempo", "30 min"];
+
 const STEPS = [
   { title: "Supabase", body: "Um projeto no plano free, região São Paulo. Roda a migration e copia a URL e a secret key." },
   { title: "Vercel", body: "Importa o repo, põe as 3 variáveis. As funções já vêm fixadas em gru1, perto do banco." },
@@ -38,6 +42,8 @@ const STEPS = [
 export default function Sobre() {
   return (
     <div className="bg-bg text-text">
+      <IntroGate />
+      <ScrollFX />
       <header className="lp-wrap flex h-16 items-center justify-between gap-4 pt-[env(safe-area-inset-top)]">
         <span className="text-[17px] font-semibold tracking-tight">Porteiro</span>
         <nav className="flex items-center gap-1 text-sm sm:gap-2" aria-label="Principal">
@@ -53,16 +59,29 @@ export default function Sobre() {
         </nav>
       </header>
 
-      {/* hero: a frase de um lado, o contador da porta do outro */}
-      <section className="lp-wrap grid items-end gap-12 pb-24 pt-14 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] md:pb-32 md:pt-24">
+      {/* hero: a frase de um lado, o passe do visitante do outro */}
+      <section
+        data-hero
+        className="lp-wrap grid min-h-[calc(100svh-4rem)] items-center gap-14 pb-20 pt-10 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] md:pb-24"
+      >
         <div className="flex min-w-0 flex-col gap-8">
-          <h1 className="text-[clamp(2.5rem,5.4vw,4.4rem)] font-semibold leading-[1.02] tracking-[-0.035em] [text-wrap:balance]">
-            O <SwapPill words={["TikTok", "Instagram", "X"]} /> só abre passando por aqui.
+          <h1 className="text-[clamp(2.6rem,6vw,5.2rem)] font-semibold leading-[1.0] tracking-[-0.04em]">
+            <span data-hero-line>
+              <span>
+                O <SwapPill words={["TikTok", "Instagram", "X"]} />
+              </span>
+            </span>
+            <span data-hero-line>
+              <span>só abre passando</span>
+            </span>
+            <span data-hero-line>
+              <span>por aqui.</span>
+            </span>
           </h1>
-          <p className="max-w-[46ch] text-lg leading-relaxed text-muted">
-            Sem passe, o Porteiro aparece por cima do app: 10 segundos de espera, você diz pra quê vai entrar e por quanto tempo. Só aí abre.
+          <p data-hero-fade className="max-w-[46ch] text-lg leading-relaxed text-muted">
+            Sem passe, o Porteiro aparece por cima do app: 10 segundos de espera, você diz pra quê vai entrar e por quanto tempo. Só aí abre. Tu acabou de passar por ele.
           </p>
-          <div className="flex flex-wrap gap-3">
+          <div data-hero-fade className="flex flex-wrap gap-3">
             <a href="#porta" className="lp-btn flex h-12 items-center gap-2 rounded-[var(--radius)] bg-accent px-5 font-medium text-accent-ink">
               Testar a porta <ArrowDown size={18} aria-hidden />
             </a>
@@ -71,15 +90,17 @@ export default function Sobre() {
             </a>
           </div>
         </div>
-        <HeroCountdown />
+        <HeroPass />
       </section>
+
+      <Ticker items={INTENTS} />
 
       {/* a porta, jogável */}
       <section id="porta" className="scroll-mt-6 border-y border-line bg-surface py-24 md:py-32">
         <div className="lp-wrap flex flex-col gap-14">
           <Rise className="flex max-w-[60ch] flex-col gap-4">
             <p className="lp-eyebrow">A porta</p>
-            <h2 className="text-[clamp(2rem,4.2vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.03em] [text-wrap:balance]">
+            <h2 data-reveal className="text-[clamp(2rem,4.2vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.03em] [text-wrap:balance]">
               Tenta abrir. É assim que o celular responde.
             </h2>
             <p className="text-lg leading-relaxed text-muted">
@@ -91,10 +112,10 @@ export default function Sobre() {
       </section>
 
       {/* o limite que cai */}
-      <section className="lp-wrap grid gap-12 py-24 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] md:py-32">
+      <section data-limit className="lp-wrap grid gap-12 py-24 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] md:py-32">
         <Rise className="flex min-w-0 flex-col gap-4">
           <p className="lp-eyebrow">O limite</p>
-          <h2 className="text-[clamp(2rem,4.2vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.03em] [text-wrap:balance]">
+          <h2 data-reveal className="text-[clamp(2rem,4.2vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.03em] [text-wrap:balance]">
             Começa folgado e aperta toda semana.
           </h2>
           <p className="max-w-[44ch] text-lg leading-relaxed text-muted">
@@ -104,7 +125,13 @@ export default function Sobre() {
             Na semana {FLOOR_WEEK} chega no piso. Os números do gráfico saem da mesma função que o app usa.
           </p>
         </Rise>
-        <div className="min-w-0 self-end">
+        <div className="flex min-w-0 flex-col gap-8 self-end">
+          <p className="flex items-baseline gap-3" aria-hidden>
+            <span data-limit-number data-values={WEEKS.map((w) => w.minutes).join(",")} className="num text-[clamp(6rem,14vw,11rem)] font-medium leading-[0.8]">
+              {WEEKS[0].minutes}
+            </span>
+            <span className="text-xl text-muted">min por app</span>
+          </p>
           <LimitBars weeks={WEEKS} />
           <p className="mt-3 text-xs text-muted">Semana do programa · minutos por app, por dia.</p>
         </div>
@@ -112,12 +139,12 @@ export default function Sobre() {
 
       {/* no computador */}
       <section className="lp-wrap grid gap-12 pb-24 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] md:items-center md:pb-32">
-        <div className="order-2 min-w-0 md:order-1">
+        <div data-browser className="order-2 min-w-0 md:order-1">
           <ExtensionDemo />
         </div>
         <Rise className="order-1 flex min-w-0 flex-col gap-4 md:order-2">
           <p className="lp-eyebrow">No computador</p>
-          <h2 className="text-[clamp(2rem,4.2vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.03em] [text-wrap:balance]">
+          <h2 data-reveal className="text-[clamp(2rem,4.2vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.03em] [text-wrap:balance]">
             A extensão fecha a porta dos fundos.
           </h2>
           <p className="max-w-[44ch] text-lg leading-relaxed text-muted">
@@ -131,7 +158,7 @@ export default function Sobre() {
         <div className="lp-wrap flex flex-col gap-14">
           <Rise className="flex max-w-[60ch] flex-col gap-4">
             <p className="lp-eyebrow">Por baixo</p>
-            <h2 className="text-[clamp(2rem,4.2vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.03em] [text-wrap:balance]">
+            <h2 data-reveal className="text-[clamp(2rem,4.2vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.03em] [text-wrap:balance]">
               Um app só teu, na tua conta.
             </h2>
             <p className="text-lg leading-relaxed text-muted">
@@ -156,8 +183,8 @@ export default function Sobre() {
       </section>
 
       {/* fim */}
-      <section className="lp-wrap flex flex-col items-start gap-8 py-24 md:py-36">
-        <h2 className="max-w-[16ch] text-[clamp(2.4rem,6vw,4.6rem)] font-semibold leading-[1.02] tracking-[-0.035em] [text-wrap:balance]">
+      <Spotlight className="lp-wrap flex flex-col items-start gap-8 py-24 md:py-36">
+        <h2 data-reveal className="max-w-[16ch] text-[clamp(2.4rem,6vw,4.6rem)] font-semibold leading-[1.02] tracking-[-0.035em] [text-wrap:balance]">
           O código tá aberto. Sobe o teu.
         </h2>
         <div className="flex flex-wrap gap-3">
@@ -168,7 +195,7 @@ export default function Sobre() {
             Guia de instalação <ArrowUpRight size={18} aria-hidden />
           </a>
         </div>
-      </section>
+      </Spotlight>
 
       <footer className="lp-wrap flex flex-wrap items-center justify-between gap-4 border-t border-line pb-[max(2rem,env(safe-area-inset-bottom))] pt-8 text-sm text-muted">
         <span>Porteiro, feito por Davi Garutti.</span>
