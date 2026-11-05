@@ -14,6 +14,7 @@ export type HabitSources = {
   pushes: Map<string, number>;
   lastHealthKey: string | null; // último dia que o app de saúde mandou dado
   githubOk: boolean;
+  healthOk: boolean; // false = não consegui ler o app de saúde (diferente de "sem dado")
 };
 
 const dayFmt = new Intl.DateTimeFormat("en-CA", { timeZone: TIMEZONE, year: "numeric", month: "2-digit", day: "2-digit" });
@@ -28,7 +29,8 @@ export async function getHabitSources(sinceKey: string): Promise<HabitSources> {
 
   const health = new Map<string, HealthDay>();
   for (const r of (saude.data ?? []) as { dia: string; sono_min: number | null; passos: number | null }[]) {
-    health.set(r.dia, { sleepMin: r.sono_min, steps: r.passos });
+    // zero = relógio fora do pulso, não um dia ruim
+    health.set(r.dia, { sleepMin: r.sono_min && r.sono_min > 0 ? r.sono_min : null, steps: r.passos && r.passos > 0 ? r.passos : null });
   }
   if (saude.error) console.error("habitos: saude", saude.error);
 
@@ -50,6 +52,7 @@ export async function getHabitSources(sinceKey: string): Promise<HabitSources> {
     pushes: github.pushes,
     lastHealthKey: (last as { dia: string } | null)?.dia ?? null,
     githubOk: github.ok,
+    healthOk: !saude.error && !treinos.error && !relogio.error,
   };
 }
 
@@ -70,6 +73,7 @@ async function fetchPushes(): Promise<{ pushes: Map<string, number>; ok: boolean
       const res = await fetch(`https://api.github.com/users/${HABITS.githubUser}/${path}?per_page=100&page=${page}`, {
         headers,
         next: { revalidate: 1800 },
+        signal: AbortSignal.timeout(2500), // GitHub travado não pode segurar as telas
       });
       if (!res.ok) return { pushes, ok: page > 1 };
       const events = (await res.json()) as { type: string; created_at: string }[];

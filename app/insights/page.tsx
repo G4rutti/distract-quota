@@ -1,6 +1,7 @@
 import { LoadError } from "@/components/load-error";
 import { Bars, PageHeader, SectionTitle } from "@/components/ui";
 import { APPS, APP_IDS } from "@/lib/config";
+import { weekIndex } from "@/lib/limits";
 import { addDays, dateLabel, getModel, type Model } from "@/lib/model";
 
 export const dynamic = "force-dynamic";
@@ -31,13 +32,16 @@ export default async function InsightsPage() {
   const shareTotal = r.thisWeek.total || 1;
   const hourMax = Math.max(...m.hours, 1);
 
-  // 4 semanas de evolução: média diária por semana do programa
-  const weeks = Array.from({ length: 4 }, (_, i) => {
-    const end = m.days.length - 1 - (3 - i) * 7; // termina em hoje na última
-    const slice = m.days.slice(Math.max(0, end - 6), end + 1).filter((d) => d.tracked);
-    const avg = slice.length ? slice.reduce((a, d) => a + d.minutes, 0) / slice.length : 0;
-    return { key: `w${i}`, label: i === 3 ? "esta" : `-${3 - i}`, value: avg, has: slice.length > 0 };
-  });
+  // Evolução: média diária por semana do programa, só dias completos (hoje fica de fora), últimas 4 semanas
+  const complete = m.days.filter((d) => d.tracked && !d.isToday);
+  const currentWeek = m.limits.week;
+  const weeks = Array.from({ length: 4 }, (_, i) => currentWeek - 3 + i)
+    .filter((w) => w >= 0)
+    .map((w) => {
+      const slice = complete.filter((d) => weekIndex(m.firstKey, d.key) === w);
+      const avg = slice.length ? slice.reduce((a, d) => a + d.minutes, 0) / slice.length : 0;
+      return { key: `w${w}`, label: `sem ${w + 1}`, value: avg, has: slice.length > 0, current: w === currentWeek };
+    });
 
   return (
     <main className="flex flex-col gap-12">
@@ -52,7 +56,9 @@ export default async function InsightsPage() {
           <span className="text-xl text-muted">min por dia</span>
         </p>
         <p>
-          {r.deltaPct === null ? (
+          {r.prevWasZero ? (
+            <span className="text-muted">Na semana anterior você não usou nada, então não tem como comparar em %.</span>
+          ) : r.deltaPct === null ? (
             <span className="text-muted">Com mais uma semana de dados dá pra comparar com a anterior.</span>
           ) : (
             <>
@@ -93,8 +99,10 @@ export default async function InsightsPage() {
         </SectionTitle>
         <Bars
           height="h-28"
-          ariaLabel={`Média diária por semana: ${weeks.map((w) => `${w.label} ${Math.round(w.value)} min`).join(", ")}.`}
-          bars={weeks.map((w) => ({ key: w.key, label: w.label, value: w.value, highlight: w.label === "esta", muted: !w.has }))}
+          ariaLabel={`Média diária por semana do programa: ${weeks
+            .map((w) => `semana ${w.label.slice(4)}, ${w.has ? `${Math.round(w.value)} min` : "sem dado"}`)
+            .join("; ")}.`}
+          bars={weeks.map((w) => ({ key: w.key, label: w.label, value: w.value, highlight: w.current, muted: !w.has }))}
         />
       </section>
 
@@ -154,12 +162,13 @@ export default async function InsightsPage() {
             />
           ))}
         </div>
-        <div className="flex justify-between text-xs text-muted" aria-hidden>
-          <span>0h</span>
-          <span>6h</span>
-          <span>12h</span>
-          <span>18h</span>
-          <span>23h</span>
+        {/* rótulos na mesma grade de 24 colunas, pra cair embaixo da hora certa */}
+        <div className="grid gap-[3px] text-xs text-muted" style={{ gridTemplateColumns: "repeat(24, minmax(0, 1fr))" }} aria-hidden>
+          {[0, 6, 12, 18].map((h) => (
+            <span key={h} className="whitespace-nowrap" style={{ gridColumnStart: h + 1 }}>
+              {h}h
+            </span>
+          ))}
         </div>
         <p className="sr-only">Tentativas por hora: {m.hours.map((n, h) => `${h}h ${n}`).join(", ")}.</p>
       </section>

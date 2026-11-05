@@ -3,7 +3,7 @@ import { APP_IDS, HABITS, TIMEZONE, type AppId } from "./config";
 import { db, type PassRow } from "./db";
 import { getHabitSources, type HabitSources, type Workout } from "./health";
 import { daysBetween, daysUntilNextWeek, perAppLimit, totalLimit, weekIndex } from "./limits";
-import { buildSessions, DAY, dayKey, fetchEvents, hourOf, MIN, splitByDay, weekdayFmt, type Session } from "./stats";
+import { buildSessions, DAY, dayKey, fetchEvents, hourOf, MIN, minutesByDay, splitByDay, weekdayFmt } from "./stats";
 
 // Um modelo só, calculado a cada request, que alimenta as 5 telas. Pra um usuário e semanas de dado, é rápido.
 
@@ -78,7 +78,7 @@ export type Model = {
   passes: PassView[]; // mais recente primeiro
   activePass: Partial<Record<AppId, PassView>>;
   habits: Habit[];
-  habitNotes: { lastHealthKey: string | null; githubOk: boolean };
+  habitNotes: { lastHealthKey: string | null; githubOk: boolean; healthOk: boolean };
   report: WeekReport;
 };
 
@@ -87,11 +87,15 @@ export type WeekReport = {
   thisWeek: { total: number; avg: number; days: number; perApp: Record<AppId, number> };
   prevWeek: { total: number; avg: number; days: number } | null;
   deltaPct: number | null;
+  prevWasZero: boolean;
   baseline: number | null; // média diária da primeira semana
   recoveredTotal: number | null;
   recoveredWeek: number | null;
   insights: Insight[];
 };
+
+/** 420 -> "7h", 450 -> "7h30". */
+const fmtHours = (min: number) => `${Math.floor(min / 60)}h${min % 60 ? String(min % 60).padStart(2, "0") : ""}`;
 
 const zeroApps = () => Object.fromEntries(APP_IDS.map((id) => [id, 0])) as Record<AppId, number>;
 
@@ -99,24 +103,33 @@ export async function getModel(): Promise<Model> {
   const nowMs = Date.now();
   const todayKey = dayKey(new Date(nowMs));
   const windowStart = addDays(todayKey, -(WINDOW_DAYS - 1));
-  // busca a partir da véspera da janela, pra uma sessão que cruzou a meia-noite ter o open
-  const fetchFrom = noonOf(addDays(windowStart, -1)).getTime() - 12 * 60 * MIN;
 
-  const [events, passRows, diary, sources, first] = await Promise.all([
+  // o primeiro evento define a semana do programa (limite) e a média inicial; erro aqui não pode virar "semana 1"
+  const first = await db().from("porteiro_events").select("at").order("at", { ascending: true }).limit(1).maybeSingle();
+  if (first.error) throw first.error;
+  const firstKey = first.data ? dayKey(new Date((first.data as { at: string }).at)) : todayKey;
+
+  // eventos desde o começo do programa (ou da janela, o que vier antes), pra média inicial, tempo recuperado e
+  // sequência valerem pra todo o histórico; começa na véspera pra uma sessão que cruzou a meia-noite ter o open
+  const historyStart = firstKey < windowStart ? firstKey : windowStart;
+  const fetchFrom = noonOf(addDays(historyStart, -1)).getTime() - 12 * 60 * MIN;
+  const passesFrom = noonOf(addDays(windowStart, -1)).getTime() - 12 * 60 * MIN;
+
+  const [events, passRows, diary, sources] = await Promise.all([
     fetchEvents(new Date(fetchFrom).toISOString()),
     db()
       .from("porteiro_passes")
       .select("*")
-      .gte("created_at", new Date(fetchFrom).toISOString())
+      .gte("created_at", new Date(passesFrom).toISOString())
       .order("created_at", { ascending: false }),
     db().from("porteiro_diary").select("dia, humor, energia").gte("dia", windowStart),
     getHabitSources(addDays(todayKey, -35)),
-    db().from("porteiro_events").select("at").order("at", { ascending: true }).limit(1).maybeSingle(),
   ]);
   if (passRows.error) throw passRows.error;
+  if (diary.error) throw diary.error;
 
-  const firstKey = first.data ? dayKey(new Date((first.data as { at: string }).at)) : todayKey;
   const sessions = buildSessions(events, nowMs);
+  const allMinutes = minutesByDay(sessions); // histórico inteiro, por dia
 
   // ---- dias ----
   const dayMap = new Map<string, DayStat>();
@@ -216,11 +229,10 @@ export async function getModel(): Promise<Model> {
   const yesterday = dayMap.get(addDays(todayKey, -1))!;
   const week = days.slice(-7);
 
-  // sequência: dias completos dentro do limite, de ontem pra trás, só dias acompanhados
+  // sequência: dias completos dentro do limite, de ontem pra trás, no histórico inteiro do programa
   let streak = 0;
-  for (let i = days.length - 2; i >= 0; i--) {
-    const d = days[i];
-    if (!d.tracked || d.minutes > d.limit) break;
+  for (let key = addDays(todayKey, -1); key >= firstKey; key = addDays(key, -1)) {
+    if ((allMinutes.get(key) ?? 0) > totalLimit(weekIndex(firstKey, key))) break;
     streak++;
   }
 
@@ -248,8 +260,8 @@ export async function getModel(): Promise<Model> {
     passes,
     activePass,
     habits: buildHabits(days.slice(-28), sources),
-    habitNotes: { lastHealthKey: sources.lastHealthKey, githubOk: sources.githubOk },
-    report: buildReport(days, sessions, passes, hours, firstKey, todayKey),
+    habitNotes: { lastHealthKey: sources.lastHealthKey, githubOk: sources.githubOk, healthOk: sources.healthOk },
+    report: buildReport(days, allMinutes, passes, hours, firstKey, todayKey),
   };
 }
 
@@ -290,7 +302,7 @@ function buildHabits(days: DayStat[], sources: HabitSources): Habit[] {
     make(
       "sono",
       "Sono",
-      `${HABITS.sleepGoalMin / 60}h ou mais`,
+      `${fmtHours(HABITS.sleepGoalMin)} ou mais`,
       (d) => ({ value: d.sleepMin, done: d.sleepMin === null ? null : d.sleepMin >= HABITS.sleepGoalMin }),
       (d) => (d.sleepMin === null ? "Sem dado do relógio" : `Dormiu ${fmtH(d.sleepMin)}`),
     ),
@@ -331,7 +343,7 @@ function buildHabits(days: DayStat[], sources: HabitSources): Habit[] {
 
 function buildReport(
   days: DayStat[],
-  sessions: Session[],
+  allMinutes: Map<string, number>,
   passes: PassView[],
   hours: number[],
   firstKey: string,
@@ -348,14 +360,27 @@ function buildReport(
   const thisWeek = { total: sum(last7), avg: last7.length ? sum(last7) / last7.length : 0, days: last7.length, perApp };
   const prevWeek = prev7.length >= 3 ? { total: sum(prev7), avg: sum(prev7) / prev7.length, days: prev7.length } : null;
   const deltaPct = prevWeek && prevWeek.avg > 0 ? ((thisWeek.avg - prevWeek.avg) / prevWeek.avg) * 100 : null;
+  // semana anterior com zero: não dá pra falar em %, mas também não é falta de dado
+  const prevWasZero = prevWeek !== null && prevWeek.avg === 0;
 
-  // tempo recuperado: quanto ficou abaixo da média da primeira semana, somado a partir da 2ª semana
-  const firstWeek = complete.filter((d) => daysBetween(firstKey, d.key) < 7);
-  const baseline = firstWeek.length >= 3 ? sum(firstWeek) / firstWeek.length : null;
-  const after = complete.filter((d) => daysBetween(firstKey, d.key) >= 7);
-  const recoveredTotal = baseline === null ? null : after.reduce((a, d) => a + Math.max(0, baseline - d.minutes), 0);
+  // Tempo recuperado: quanto ficou abaixo da média inicial, somado no histórico inteiro.
+  // Média inicial = dias 2 a 8 do programa (o primeiro dia quase sempre é parcial e puxaria pra baixo).
+  const yesterdayKey = addDays(todayKey, -1);
+  const baselineKeys = Array.from({ length: 7 }, (_, i) => addDays(firstKey, i + 1)).filter((k) => k <= yesterdayKey);
+  const baseline =
+    baselineKeys.length >= 3 ? baselineKeys.reduce((a, k) => a + (allMinutes.get(k) ?? 0), 0) / baselineKeys.length : null;
+  const recoveredFrom = addDays(firstKey, 8);
+  let recoveredTotal: number | null = null;
+  if (baseline !== null) {
+    recoveredTotal = 0;
+    for (let k = recoveredFrom; k <= yesterdayKey; k = addDays(k, 1)) {
+      recoveredTotal += Math.max(0, baseline - (allMinutes.get(k) ?? 0));
+    }
+  }
   const recoveredWeek =
-    baseline === null ? null : last7.filter((d) => after.includes(d)).reduce((a, d) => a + Math.max(0, baseline - d.minutes), 0);
+    baseline === null
+      ? null
+      : last7.filter((d) => d.key >= recoveredFrom).reduce((a, d) => a + Math.max(0, baseline - d.minutes), 0);
 
   const insights: Insight[] = [];
   const m = (n: number) => `${Math.round(n)} min`;
@@ -414,11 +439,13 @@ function buildReport(
 
   const sleepSplit = splitBy(complete.slice(-28), (d) => (d.sleepMin === null ? null : d.sleepMin >= HABITS.sleepGoalMin));
   if (sleepSplit) {
-    const diff = sleepSplit.no - sleepSplit.yes;
+    // o app de saúde grava o sono no dia em que você acordou, então é o mesmo dia da tela
+    const diff = Math.round(sleepSplit.no - sleepSplit.yes);
+    const goal = fmtHours(HABITS.sleepGoalMin);
     insights.push({
       title: "Sono x tela",
-      value: diff > 0 ? `${m(diff)} a menos` : `${m(-diff)} a mais`,
-      detail: `de redes nos dias depois de dormir 7h ou mais (${m(sleepSplit.yes)} contra ${m(sleepSplit.no)}).`,
+      value: diff === 0 ? "Mesmo tempo" : diff > 0 ? `${m(diff)} a menos` : `${m(-diff)} a mais`,
+      detail: `de redes nos dias em que você dormiu ${goal} ou mais (${m(sleepSplit.yes)} contra ${m(sleepSplit.no)}).`,
     });
   }
 
@@ -436,6 +463,7 @@ function buildReport(
     thisWeek,
     prevWeek,
     deltaPct,
+    prevWasZero,
     baseline,
     recoveredTotal,
     recoveredWeek,

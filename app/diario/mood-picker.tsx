@@ -15,8 +15,13 @@ export function MoodPicker({ dia, field, label, options, value }: Props) {
     setError(null);
     startTransition(async () => {
       setOptimistic(v);
-      const res = await saveDiary(dia, field, v);
-      if (!res.ok) setError(res.error ?? "Erro ao salvar.");
+      try {
+        const res = await saveDiary(dia, field, v);
+        if (!res.ok) setError(res.error ?? "Erro ao salvar.");
+      } catch {
+        // rede caiu ou sessão expirou: o otimista volta sozinho e a tela não quebra
+        setError("Não consegui salvar. Confere a internet e tenta de novo.");
+      }
     });
   }
 

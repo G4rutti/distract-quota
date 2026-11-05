@@ -96,7 +96,7 @@ export function Delta({ now, before, unit = "min", against }: { now: number; bef
 }
 
 /** Linha de quadradinhos (1 por dia) pra hábito: cheio = feito, contorno = não feito, apagado = sem dado. */
-export function DayDots({ days, label }: { days: { key: string; done: boolean | null }[]; label: string }) {
+export function DayDots({ days, label }: { days: { key: string; done: boolean | null; title?: string }[]; label: string }) {
   return (
     <div
       className="grid gap-[3px]"
@@ -107,9 +107,9 @@ export function DayDots({ days, label }: { days: { key: string; done: boolean | 
       {days.map((d) => (
         <div
           key={d.key}
-          title={d.key}
+          title={d.title ?? d.key}
           className={`aspect-square rounded-[4px] ${
-            d.done === true ? "bg-accent" : d.done === false ? "border border-muted/60" : "bg-line/60"
+            d.done === true ? "bg-accent" : d.done === false ? "border-2 border-muted" : "bg-line"
           }`}
         />
       ))}

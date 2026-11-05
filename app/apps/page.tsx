@@ -37,6 +37,9 @@ function AppSection({ id, m }: { id: AppId; m: Model }) {
   const today = Math.round(m.today.perApp[id]);
   const week = m.week;
   const weekTotal = week.reduce((a, d) => a + d.perApp[id], 0);
+  // média só dos dias completos e acompanhados (sem hoje, que ainda tá rolando)
+  const completeDays = week.filter((d) => d.tracked && !d.isToday);
+  const avg = completeDays.length ? completeDays.reduce((a, d) => a + d.perApp[id], 0) / completeDays.length : null;
   const passes = m.passes.filter((p) => p.app === id).slice(0, 4);
 
   return (
@@ -47,8 +50,8 @@ function AppSection({ id, m }: { id: AppId; m: Model }) {
 
       <div className="grid grid-cols-3 gap-4">
         <Num label="Hoje" value={today} sub={`de ${m.limits.perApp}`} />
-        <Num label="7 dias" value={Math.round(weekTotal)} sub="min" />
-        <Num label="Média" value={Math.round(weekTotal / 7)} sub="min/dia" />
+        <Num label="7 dias" value={Math.round(weekTotal)} sub="min, com hoje" />
+        <Num label="Média" value={avg === null ? "-" : Math.round(avg)} sub={avg === null ? "a partir de amanhã" : "min/dia"} />
       </div>
 
       <Bars
@@ -105,7 +108,7 @@ function PassRow({ p }: { p: PassView }) {
   );
 }
 
-function Num({ label, value, sub }: { label: string; value: number; sub: string }) {
+function Num({ label, value, sub }: { label: string; value: number | string; sub: string }) {
   return (
     <div className="flex flex-col gap-1">
       <span className="text-sm text-muted">{label}</span>

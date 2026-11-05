@@ -2,7 +2,8 @@ import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { LoadError } from "@/components/load-error";
 import { Bars, Delta, PageHeader, SectionTitle } from "@/components/ui";
-import { APPS, APP_IDS } from "@/lib/config";
+import { APPS, APP_IDS, LIMITS } from "@/lib/config";
+import { perAppLimit } from "@/lib/limits";
 import { fmtDate, fmtTime } from "@/lib/format";
 import { getModel, weekdayLabel, type Model } from "@/lib/model";
 
@@ -45,12 +46,14 @@ export default async function Hoje() {
         </p>
         <p className="text-sm text-muted">
           {m.yesterday.tracked ? (
-            <Delta now={m.today.minutes} before={m.yesterday.minutes} against="ontem inteiro" />
+            <>
+              <Delta now={m.today.minutes} before={m.yesterday.minutes} against="ontem inteiro" />
+              {", "}
+            </>
           ) : (
-            "Primeiro dia: amanhã já dá pra comparar com hoje."
+            "Primeiro dia, amanhã já dá pra comparar. "
           )}
-          {", "}
-          {m.today.blocked} {m.today.blocked === 1 ? "barrada" : "barradas"} na porta.
+          {m.today.blocked} {m.today.blocked === 1 ? "barrada" : "barradas"} na porta hoje.
         </p>
       </section>
 
@@ -93,7 +96,13 @@ export default async function Hoje() {
       <section aria-labelledby="semana" className="flex flex-col gap-4">
         <SectionTitle
           id="semana"
-          aside={m.streak > 0 ? `${m.streak} ${m.streak === 1 ? "dia" : "dias"} no limite` : "Sequência zerada"}
+          aside={
+            !m.yesterday.tracked
+              ? "sequência começa amanhã"
+              : m.streak > 0
+                ? `${m.streak} ${m.streak === 1 ? "dia" : "dias"} no limite`
+                : "sequência zerada"
+          }
         >
           Últimos 7 dias
         </SectionTitle>
@@ -123,16 +132,21 @@ export default async function Hoje() {
 }
 
 function LimitSchedule({ m }: { m: Model }) {
-  const { perApp, nextPerApp, daysLeft, week } = m.limits;
+  const { perApp, daysLeft, week } = m.limits;
+  // o arredondamento pra múltiplo de 5 pode repetir o valor numa semana: procura a próxima queda de verdade
+  let k = week + 1;
+  while (perAppLimit(k) >= perApp && perApp > LIMITS.floorPerApp) k++;
+  const nextPerApp = perAppLimit(k);
+  const daysToDrop = daysLeft + (k - week - 1) * 7;
   return (
     <section aria-labelledby="limite" className="flex flex-col gap-2 rounded-ui bg-surface p-5">
       <h2 id="limite" className="font-medium">
         Semana {week + 1} do programa
       </h2>
       <p className="text-sm text-muted">
-        {nextPerApp < perApp ? (
+        {perApp > LIMITS.floorPerApp ? (
           <>
-            Em {daysLeft} {daysLeft === 1 ? "dia" : "dias"} o limite cai de {perApp} pra{" "}
+            Em {daysToDrop} {daysToDrop === 1 ? "dia" : "dias"} o limite cai de {perApp} pra{" "}
             <strong className="font-semibold text-text">{nextPerApp} min</strong> por app.
           </>
         ) : (

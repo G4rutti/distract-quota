@@ -13,7 +13,7 @@ export default async function HabitosPage() {
     return <LoadError href="/habitos" />;
   }
 
-  const { lastHealthKey, githubOk } = m.habitNotes;
+  const { lastHealthKey, githubOk, healthOk } = m.habitNotes;
   const healthStale = lastHealthKey !== null && lastHealthKey < m.days[m.days.length - 3].key;
 
   return (
@@ -23,13 +23,18 @@ export default async function HabitosPage() {
         Tudo entra sozinho: sono, passos e treino vêm do teu relógio, programação vem do GitHub.
       </p>
 
-      {healthStale && (
+      {healthOk && healthStale && (
         <p role="note" className="rounded-ui bg-surface p-4 text-sm">
           O relógio não manda dado desde <strong className="font-semibold">{dateLabel(lastHealthKey)}</strong>. Sono,
           passos e treino voltam a aparecer quando a sincronização voltar.
         </p>
       )}
-      {lastHealthKey === null && (
+      {!healthOk && (
+        <p role="note" className="rounded-ui bg-surface p-4 text-sm">
+          Não consegui ler o app de saúde agora. Sono, passos e treino aparecem de novo no próximo carregamento.
+        </p>
+      )}
+      {healthOk && lastHealthKey === null && (
         <p role="note" className="rounded-ui bg-surface p-4 text-sm">
           Ainda não chegou nenhum dado do relógio.
         </p>
@@ -43,8 +48,8 @@ export default async function HabitosPage() {
 
       <div className="flex items-center gap-5 text-xs text-muted" aria-hidden>
         <Legend className="bg-accent" label="Feito" />
-        <Legend className="border border-muted/60" label="Não feito" />
-        <Legend className="bg-line/60" label="Sem dado" />
+        <Legend className="border-2 border-muted" label="Não feito" />
+        <Legend className="bg-line" label="Sem dado" />
       </div>
 
       {!githubOk && (
@@ -75,10 +80,14 @@ function HabitRow({ h }: { h: Habit }) {
           )}
         </span>
       </div>
-      <DayDots days={h.days} label={`${h.name} nos últimos 28 dias: ${h.days.filter((d) => d.done).length} feitos.`} />
+      <DayDots
+        days={h.days.map((d) => ({ ...d, title: dateLabel(d.key) }))}
+        label={`${h.name} nos últimos 28 dias: ${h.days.filter((d) => d.done === true).length} feitos, ${
+          h.days.filter((d) => d.done === false).length
+        } não feitos, ${h.days.filter((d) => d.done === null).length} sem dado.`}
+      />
       <p className="text-sm text-muted">
-        Hoje: <span className="text-text">{h.today}</span>
-        {h.streak > 1 && <>. {h.streak} dias seguidos</>}
+        Hoje: <span className="text-text">{h.today}</span>.{h.streak > 1 && <> {h.streak} dias seguidos.</>}
       </p>
     </li>
   );
