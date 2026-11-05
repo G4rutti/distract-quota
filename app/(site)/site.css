@@ -1,0 +1,248 @@
+/* lp-forge: vibe-ok fotos-inclinadas · as rotações são do carimbo LIBERADO e do canhoto do passe caindo; não há fotos */
+/* Landing do Porteiro. Usa os tokens do app (globals.css) e só acrescenta o papel do passe.
+   Layout: hero partido (frase à esquerda, contador gigante à direita), depois seções alternando apertado/respirado. */
+:root {
+  --paper: oklch(0.993 0.002 250);
+  --paper-ink: oklch(0.22 0.012 255);
+  --paper-muted: oklch(0.5 0.01 255);
+  --stamp: oklch(0.5 0.14 140);
+  --void: oklch(0.6 0.16 28);
+  --site-max: 1120px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: oklch(0.96 0.004 250);
+    --paper-ink: oklch(0.2 0.012 255);
+    --paper-muted: oklch(0.45 0.01 255);
+    --stamp: oklch(0.52 0.15 140);
+    --void: oklch(0.6 0.17 28);
+  }
+}
+
+.lp-wrap {
+  width: 100%;
+  max-width: var(--site-max);
+  margin-inline: auto;
+  padding-left: max(20px, env(safe-area-inset-left, 0px));
+  padding-right: max(20px, env(safe-area-inset-right, 0px));
+}
+
+.lp-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- pílula que troca de app ---------- */
+.lp-pill {
+  display: inline-grid;
+  vertical-align: baseline;
+  min-width: 5.4ch;
+  padding: 0 0.32em;
+  border-radius: 0.28em;
+  background: var(--accent-soft);
+  color: var(--text);
+  text-align: center;
+}
+.lp-pill > span {
+  grid-area: 1 / 1;
+  transition: opacity 360ms cubic-bezier(0.2, 0, 0, 1), transform 360ms cubic-bezier(0.2, 0, 0, 1), filter 360ms ease;
+}
+.lp-pill > span[data-state="out"] {
+  opacity: 0;
+  transform: translateY(-0.45em);
+  filter: blur(6px);
+}
+.lp-pill > span[data-state="in"] {
+  opacity: 1;
+  transform: none;
+  filter: none;
+}
+.lp-pill > span[data-state="wait"] {
+  opacity: 0;
+  transform: translateY(0.45em);
+  filter: blur(6px);
+}
+
+/* ---------- contador do hero ---------- */
+.lp-count {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.08em;
+  line-height: 0.78;
+  font-weight: 500;
+  font-size: clamp(9rem, 30vw, 22rem);
+  position: relative;
+  display: inline-grid;
+}
+.lp-count > span {
+  grid-area: 1 / 1;
+  text-align: right;
+  transition: opacity 420ms cubic-bezier(0.2, 0, 0, 1), transform 420ms cubic-bezier(0.2, 0, 0, 1), filter 420ms ease;
+}
+.lp-count > span[data-state="out"] {
+  opacity: 0;
+  transform: translateY(-14%);
+  filter: blur(10px);
+}
+.lp-count > span[data-state="wait"] {
+  opacity: 0;
+  transform: translateY(14%);
+  filter: blur(10px);
+}
+
+.lp-ring {
+  transform: rotate(-90deg);
+}
+.lp-ring circle:last-child {
+  transition: stroke-dashoffset 1s linear;
+}
+
+/* ---------- passe (ticket) ---------- */
+.lp-slot {
+  position: relative;
+  border-radius: 12px;
+  height: 10px;
+  background: var(--text);
+  opacity: 0.9;
+}
+.lp-ticket-clip {
+  overflow: hidden;
+  margin-top: -5px;
+  padding-inline: 10px;
+}
+.lp-ticket {
+  position: relative;
+  background: var(--paper);
+  color: var(--paper-ink);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  --tooth: 6px;
+  mask:
+    conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) 50% / calc(var(--tooth) * 2) 100%;
+}
+.lp-ticket[data-flat="true"] {
+  mask: none;
+  box-shadow: none;
+}
+.lp-ticket-body[data-printing="true"] {
+  animation: lp-print 1.4s steps(14, end) both;
+}
+.lp-ticket-body {
+  filter: drop-shadow(0 10px 10px rgb(0 0 0 / 0.1));
+}
+@keyframes lp-print {
+  from { transform: translateY(-101%); }
+  to { transform: translateY(0); }
+}
+.lp-perf {
+  border-top: 2px dashed color-mix(in oklch, var(--paper-ink) 25%, transparent);
+  margin-inline: -16px;
+}
+
+.lp-stamp {
+  position: absolute;
+  right: 14px;
+  top: 46%;
+  padding: 4px 10px;
+  border: 3px solid currentColor;
+  border-radius: 6px;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.06em;
+  transform: rotate(-12deg);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  opacity: 0;
+}
+.lp-stamp[data-on="true"] {
+  animation: lp-stamp 520ms cubic-bezier(0.2, 0.9, 0.25, 1.2) both;
+}
+@keyframes lp-stamp {
+  0% { opacity: 0; transform: rotate(-4deg) scale(2.1); }
+  55% { opacity: 0.95; transform: rotate(-13deg) scale(0.94); }
+  100% { opacity: 0.9; transform: rotate(-12deg) scale(1); }
+}
+.lp-thud[data-on="true"] {
+  animation: lp-thud 360ms ease-out 260ms both;
+}
+@keyframes lp-thud {
+  0%, 100% { transform: none; }
+  30% { transform: translateY(3px) rotate(0.4deg); }
+  60% { transform: translateY(-1px) rotate(-0.2deg); }
+}
+
+/* rasgo quando vence */
+.lp-stub[data-torn="true"] {
+  animation: lp-fall 900ms cubic-bezier(0.55, 0, 0.9, 0.45) 120ms forwards;
+}
+@keyframes lp-fall {
+  0% { transform: none; }
+  25% { transform: translate(4px, 6px) rotate(4deg); }
+  100% { transform: translate(40px, 340px) rotate(28deg); opacity: 0; }
+}
+
+/* ---------- barras do limite ---------- */
+.lp-bar {
+  transform-origin: bottom;
+  transform: scaleY(0.02);
+  transition: transform 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+[data-seen="true"] .lp-bar {
+  transform: scaleY(1);
+}
+
+/* ---------- entrada das seções ---------- */
+.lp-rise {
+  transition: opacity 700ms ease, transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.lp-rise[data-seen="false"] {
+  opacity: 0.001;
+  transform: translateY(18px);
+}
+
+/* ---------- navegador da extensão ---------- */
+.lp-caret {
+  display: inline-block;
+  width: 1px;
+  height: 1.05em;
+  margin-left: 1px;
+  vertical-align: -0.15em;
+  background: currentColor;
+  animation: lp-blink 1s steps(2, start) infinite;
+}
+@keyframes lp-blink {
+  to { visibility: hidden; }
+}
+
+.lp-btn {
+  transition: transform 120ms cubic-bezier(0.2, 0, 0, 1), background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.lp-btn:active {
+  transform: translateY(1px) scale(0.985);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lp-pill > span,
+  .lp-count > span,
+  .lp-bar,
+  .lp-rise,
+  .lp-btn,
+  .lp-ring circle:last-child {
+    transition: none;
+  }
+  .lp-ticket-body[data-printing="true"],
+  .lp-stamp[data-on="true"],
+  .lp-thud[data-on="true"],
+  .lp-stub[data-torn="true"],
+  .lp-caret {
+    animation-duration: 1ms;
+  }
+  .lp-rise[data-seen="false"] {
+    opacity: 1;
+    transform: none;
+  }
+}
