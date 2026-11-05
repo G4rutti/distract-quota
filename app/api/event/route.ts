@@ -10,7 +10,8 @@ export const dynamic = "force-dynamic";
  * Aceita GET (padrão do "Obter conteúdo de URL") e POST.
  */
 async function handle(req: NextRequest) {
-  if (!isValidKey(req.headers.get(KEY_HEADER))) {
+  // segredo pelo header (x-porteiro-key) ou pela URL (?k=), que é mais fácil de configurar no Atalhos
+  if (!isValidKey(req.headers.get(KEY_HEADER) ?? req.nextUrl.searchParams.get("k"))) {
     return new NextResponse("chave invalida", { status: 401 });
   }
 

@@ -37,8 +37,8 @@ export default async function SetupPage() {
             <h3 className="text-sm font-medium">Quando for aberto</h3>
             <ol className="flex list-decimal flex-col gap-1.5 pl-5 text-muted">
               <li>
-                Obter conteúdo de URL: <Code>{`${base}/api/gate?app=${id}`}</Code>, método GET, cabeçalho{" "}
-                <Code>{KEY_HEADER}</Code> com o seu APP_SECRET
+                Obter conteúdo de URL: <Code>{`${base}/api/gate?app=${id}&k=SEU_SEGREDO`}</Code>, trocando
+                SEU_SEGREDO pelo APP_SECRET (ou mandando ele no cabeçalho <Code>{KEY_HEADER}</Code>)
               </li>
               <li>
                 Se o conteúdo <strong className="text-text">não contém</strong> <Code>liberado</Code>
@@ -53,7 +53,7 @@ export default async function SetupPage() {
             <h3 className="text-sm font-medium">Quando for fechado</h3>
             <ol className="flex list-decimal flex-col gap-1.5 pl-5 text-muted">
               <li>
-                Obter conteúdo de URL: <Code>{`${base}/api/event?app=${id}`}</Code>, mesmo cabeçalho
+                Obter conteúdo de URL: <Code>{`${base}/api/event?app=${id}&k=SEU_SEGREDO`}</Code>
               </li>
             </ol>
           </div>
