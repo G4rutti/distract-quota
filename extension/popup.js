@@ -60,4 +60,21 @@ $("config").addEventListener("submit", async (e) => {
   await renderStatus();
 });
 
+async function renderDiag() {
+  const d = await chrome.storage.local.get({ diag: [], lastError: "", lastContact: "", pendingCloses: [] });
+  $("contact").textContent =
+    `Última conversa com a porta: ${d.lastContact || "nenhuma"}` +
+    (d.lastError ? ` | Último erro: ${d.lastError}` : "") +
+    (d.pendingCloses.length ? ` | Fechamentos na fila: ${d.pendingCloses.length}` : "");
+  $("diag").textContent = d.diag.slice().reverse().join("\n") || "Nada ainda.";
+}
+
+$("copy").addEventListener("click", async () => {
+  const manifest = chrome.runtime.getManifest();
+  const text = `Porteiro ${manifest.version} | ${navigator.userAgent}\n${$("contact").textContent}\n${$("diag").textContent}`;
+  await navigator.clipboard.writeText(text);
+  $("copy").textContent = "Copiado";
+});
+
 load();
+renderDiag();

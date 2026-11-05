@@ -32,6 +32,17 @@ const DEFAULTS = { current: null, lastSeen: 0, pausedAt: null, pendingCloses: []
 const getState = () => chrome.storage.local.get(DEFAULTS);
 const setState = (patch) => chrome.storage.local.set(patch);
 
+/** Diário de bordo pro popup: últimas 40 ações, pra achar onde travou sem precisar do console. */
+async function log(msg) {
+  try {
+    const { diag = [] } = await chrome.storage.local.get({ diag: [] });
+    diag.push(`${new Date().toLocaleTimeString("pt-BR")} ${msg}`);
+    await chrome.storage.local.set({ diag: diag.slice(-40) });
+  } catch {
+    /* diagnóstico nunca pode quebrar a porta */
+  }
+}
+
 // ---------- o que está em uso agora ----------
 async function inUse() {
   let win;
@@ -63,10 +74,18 @@ async function flushCloses() {
   const { pendingCloses } = await getState();
   if (!pendingCloses.length) return;
   const keep = [];
+  let tries = 0;
   for (const c of pendingCloses) {
     const ago = Math.max(0, Date.now() - c.endedAt);
     if (ago > 12 * 3600_000) continue;
+    // no máximo 2 envios por rodada: rede ruim não pode segurar a porta
+    if (tries >= 2) {
+      keep.push(c);
+      continue;
+    }
+    tries++;
     const r = await api("/api/event", { app: c.app, ago: String(Math.round(ago)) });
+    await log(`fechou ${c.app}: ${r.status || r.text}`);
     if (!r.ok && r.status !== 401 && r.status !== 400) keep.push(c);
   }
   await setState({ pendingCloses: keep });
@@ -85,25 +104,36 @@ async function sendToGate(tabId, app, url) {
 
 // ---------- sincronização ----------
 // Uma de cada vez, e rajadas viram uma só: trocar de aba dispara vários eventos.
+// Cão de guarda: se uma rodada ficar presa mais de 20 s (rede pendurada, worker morto no meio),
+// a fila é solta e a próxima rodada começa do zero. Sem isso, um travamento desligava a porta pra sempre.
 let running = null;
+let runningSince = 0;
 let again = false;
 function sync(reason) {
-  if (running) {
+  if (running && Date.now() - runningSince < 20_000) {
     again = true;
     return running;
   }
-  running = (async () => {
+  if (running) log(`rodada presa há ${Math.round((Date.now() - runningSince) / 1000)} s, soltei`);
+  runningSince = Date.now();
+  const mine = (async () => {
+    let rounds = 0;
     do {
       again = false;
       try {
         await doSync(reason);
       } catch (err) {
         console.warn("porteiro:", reason, err);
+        await log(`erro (${reason}): ${err && err.message ? err.message : err}`);
+        await chrome.storage.local.set({ lastError: `${new Date().toLocaleTimeString("pt-BR")} ${err && err.message ? err.message : err}` });
       }
-    } while (again);
-    running = null;
+    } while (again && ++rounds < 5);
   })();
-  return running;
+  running = mine;
+  mine.finally(() => {
+    if (running === mine) running = null;
+  });
+  return mine;
 }
 
 async function doSync(reason) {
@@ -116,6 +146,7 @@ async function doSync(reason) {
   // Lacuna: ficamos sem olhar por muito tempo (Chrome fechado, notebook dormindo, extensão recarregada).
   // A sessão fecha na última vez em que foi vista, não agora.
   if (current && !pausedAt && now - lastSeen > GAP_MS) {
+    await log(`lacuna de ${Math.round((now - lastSeen) / 1000)} s em ${current.app}: fechando na última vez vista`);
     await queueClose(current.app, lastSeen);
     current = null;
     pausedAt = null;
@@ -151,6 +182,8 @@ async function doSync(reason) {
 
   // Começou a usar um app: pergunta à porta
   const r = await api("/api/gate", { app: next.app });
+  await log(`porta ${next.app}: ${r.ok ? r.text : `falhou (${r.status || r.text})`}`);
+  await chrome.storage.local.set({ lastContact: `${new Date().toLocaleTimeString("pt-BR")} porta ${next.app}: ${r.ok ? r.text : "falhou"}` });
   if (r.ok && r.text.includes("liberado")) {
     await setState({ current: { app: next.app, tabId: next.tabId, since: Date.now() }, lastSeen: Date.now(), pausedAt: null });
   } else if (r.ok && r.text.includes("barrado")) {
@@ -172,6 +205,7 @@ async function checkPass(app, tab) {
     return;
   }
   if (body.active !== false) return;
+  await log(`passe de ${app} acabou: expulsando`);
   await queueClose(app, Date.now());
   await setState({ current: null, pausedAt: null });
   await flushCloses();
