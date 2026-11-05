@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { APPS, isAppId } from "@/lib/config";
 import { db, type PassRow } from "@/lib/db";
 import { fmtTime } from "@/lib/format";
-import { DAILY_GOAL_MIN } from "@/lib/config";
 import { getEntryInfo } from "@/lib/stats";
 import { EntryFlow } from "./entry-flow";
 import { OpenAppLinks } from "./open-app-links";
@@ -51,7 +50,7 @@ export default async function EntrarPage({ params }: { params: Promise<{ app: st
     <EntryFlow
       app={{ id: config.id, name: config.name, openUrl: config.openUrl, schemeUrl: config.schemeUrl }}
       todayMinutes={info ? Math.round(info.todayMinutes) : null}
-      goal={DAILY_GOAL_MIN}
+      goal={info?.limit ?? null}
       last={last && !last.active ? { intent: last.intent, asked: last.asked, used: Math.round(last.used) } : null}
     />
   );

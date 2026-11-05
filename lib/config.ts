@@ -38,8 +38,26 @@ export function isAppId(value: unknown): value is AppId {
   return typeof value === "string" && Object.hasOwn(APPS, value);
 }
 
-/** Meta diária somando todos os apps. Dia dentro da meta conta pra sequência. */
-export const DAILY_GOAL_MIN = 45;
+/**
+ * Limite progressivo por app: começa alto e cai a cada semana, contando do primeiro dia com registro.
+ * Semana 1: 60 min, semana 2: 50, semana 3: 45... até o piso. O limite total do dia é a soma dos apps.
+ */
+export const LIMITS = {
+  startPerApp: 60,
+  floorPerApp: 15,
+  weeklyCut: 0.15,
+};
+
+/** Hábitos lidos do app de saúde (tabelas saude, treinos, treinos_relogio) e do GitHub. Nada é marcado à mão. */
+export const HABITS = {
+  sleepGoalMin: 420, // 7h
+  stepsGoal: 8000,
+  githubUser: "G4rutti",
+};
+
+/** Humor e disposição: um toque, de 1 a 5. */
+export const MOOD_LABELS = ["Péssimo", "Ruim", "Ok", "Bom", "Ótimo"] as const;
+export const ENERGY_LABELS = ["Zerado", "Baixa", "Normal", "Boa", "No talo"] as const;
 
 /** Opções de tempo na tela de liberar. */
 export const MINUTE_OPTIONS = [5, 10, 15, 30] as const;

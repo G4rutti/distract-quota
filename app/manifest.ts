@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Porteiro",
     short_name: "Porteiro",
-    description: "TikTok e Instagram só entram passando por aqui.",
+    description: "Redes sociais só entram passando por aqui.",
     start_url: "/",
     display: "standalone",
     background_color: "#14161a",
