@@ -20,7 +20,7 @@ export async function createPass(app: string, minutes: number, intent: string): 
 
   const now = Date.now();
   const expiresAt = new Date(now + minutes * 60_000).toISOString();
-  const { error } = await db().from("passes").insert({
+  const { error } = await db().from("porteiro_passes").insert({
     app,
     minutes,
     intent: cleanIntent,

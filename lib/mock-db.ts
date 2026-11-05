@@ -4,7 +4,7 @@
 type Row = Record<string, unknown>;
 type Filter = (r: Row) => boolean;
 
-const tables: Record<string, Row[]> = { events: [], passes: [] };
+const tables: Record<string, Row[]> = { porteiro_events: [], porteiro_passes: [] };
 let nextId = 1;
 
 function seed() {
@@ -25,18 +25,18 @@ function seed() {
       const dayStart = new Date(base);
       dayStart.setUTCHours(s.h + 3, (i * 13) % 60, 0, 0); // +3 = SP pra UTC
       const app = apps[(d + i) % 2];
-      tables.events.push({ id: nextId++, app, kind: "open", allowed: true, at: new Date(dayStart).toISOString() });
-      tables.events.push({ id: nextId++, app, kind: "close", allowed: null, at: new Date(dayStart.getTime() + s.len * min).toISOString() });
-      if (i === 2) tables.events.push({ id: nextId++, app, kind: "open", allowed: false, at: new Date(dayStart.getTime() - 20 * min).toISOString() });
+      tables.porteiro_events.push({ id: nextId++, app, kind: "open", allowed: true, at: new Date(dayStart).toISOString() });
+      tables.porteiro_events.push({ id: nextId++, app, kind: "close", allowed: null, at: new Date(dayStart.getTime() + s.len * min).toISOString() });
+      if (i === 2) tables.porteiro_events.push({ id: nextId++, app, kind: "open", allowed: false, at: new Date(dayStart.getTime() - 20 * min).toISOString() });
     });
   }
   // hoje: uma sessão de manhã e duas barradas
   const morning = now - 3 * 60 * min;
-  tables.events.push({ id: nextId++, app: "tiktok", kind: "open", allowed: false, at: new Date(morning - 40 * min).toISOString() });
-  tables.events.push({ id: nextId++, app: "tiktok", kind: "open", allowed: true, at: new Date(morning).toISOString() });
-  tables.events.push({ id: nextId++, app: "tiktok", kind: "close", allowed: null, at: new Date(morning + 34 * min).toISOString() });
-  tables.events.push({ id: nextId++, app: "instagram", kind: "open", allowed: false, at: new Date(now - 30 * min).toISOString() });
-  tables.passes.push({
+  tables.porteiro_events.push({ id: nextId++, app: "tiktok", kind: "open", allowed: false, at: new Date(morning - 40 * min).toISOString() });
+  tables.porteiro_events.push({ id: nextId++, app: "tiktok", kind: "open", allowed: true, at: new Date(morning).toISOString() });
+  tables.porteiro_events.push({ id: nextId++, app: "tiktok", kind: "close", allowed: null, at: new Date(morning + 34 * min).toISOString() });
+  tables.porteiro_events.push({ id: nextId++, app: "instagram", kind: "open", allowed: false, at: new Date(now - 30 * min).toISOString() });
+  tables.porteiro_passes.push({
     id: nextId++,
     app: "tiktok",
     intent: "Responder DM",

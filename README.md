@@ -25,7 +25,7 @@ Abertura liberada + próximo fechamento = uma sessão. É daí que saem os minut
 ## 1. Supabase
 
 1. Crie um projeto em supabase.com (o plano free sobra), na região **South America (São Paulo)**. O gate roda a cada vez que você abre o app; quanto mais perto, menos o TikTok "pisca".
-2. SQL Editor: cole e rode `supabase/migrations/0001_init.sql`.
+2. SQL Editor: cole e rode `supabase/migrations/0001_init.sql`. As tabelas têm prefixo `porteiro_`, então dá pra rodar num projeto que já tem outras coisas.
 3. Copie a **Project URL** (Project Settings > Data API) e uma **Secret key** `sb_secret_...` (Project Settings > API Keys). A chave publishable não serve: as tabelas têm RLS sem policy e sem grant pros papéis públicos, então só a chave secreta, no servidor, enxerga os dados.
 
 ## 2. Rodar local

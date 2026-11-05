@@ -32,7 +32,7 @@ async function fetchEvents(sinceIso: string): Promise<EventRow[]> {
   const rows: EventRow[] = [];
   for (let from = 0; ; from += PAGE) {
     const { data, error } = await db()
-      .from("events")
+      .from("porteiro_events")
       .select("id, app, kind, allowed, at")
       .gte("at", sinceIso)
       .order("at", { ascending: true })
@@ -192,7 +192,7 @@ export async function getStats(): Promise<Stats> {
   }
 
   const { count: passesToday } = await db()
-    .from("passes")
+    .from("porteiro_passes")
     .select("id", { count: "exact", head: true })
     .gte("created_at", startOfToday(nowMs).toISOString());
 
@@ -217,7 +217,7 @@ export async function getEntryInfo(app: AppId): Promise<{ todayMinutes: number; 
   const nowMs = Date.now();
   const todayStart = startOfToday(nowMs).getTime();
   const { data } = await db()
-    .from("passes")
+    .from("porteiro_passes")
     .select("*")
     .eq("app", app)
     .order("created_at", { ascending: false })
@@ -252,7 +252,7 @@ async function getLastPasses(sessions: Session[], nowMs: number): Promise<Partia
   await Promise.all(
     APP_IDS.map(async (app) => {
       const { data, error } = await db()
-        .from("passes")
+        .from("porteiro_passes")
         .select("*")
         .eq("app", app)
         .order("created_at", { ascending: false })

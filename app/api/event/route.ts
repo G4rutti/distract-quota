@@ -17,7 +17,7 @@ async function handle(req: NextRequest) {
   const app = req.nextUrl.searchParams.get("app");
   if (!isAppId(app)) return new NextResponse("app desconhecido", { status: 400 });
 
-  const { error } = await db().from("events").insert({ app, kind: "close" });
+  const { error } = await db().from("porteiro_events").insert({ app, kind: "close" });
   if (error) {
     console.error("event: erro gravando close", error);
     return new NextResponse("erro", { status: 500 });

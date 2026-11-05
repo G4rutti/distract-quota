@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
   // carimba a hora na chegada: se gravasse depois da consulta, um abre-e-fecha rápido inverteria open/close
   const now = new Date().toISOString();
   const { data: pass, error } = await db()
-    .from("passes")
+    .from("porteiro_passes")
     .select("id")
     .eq("app", app)
     .gt("expires_at", now)
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
   }
 
   const allowed = Boolean(pass);
-  const { error: insertError } = await db().from("events").insert({ app, kind: "open", allowed, at: now });
+  const { error: insertError } = await db().from("porteiro_events").insert({ app, kind: "open", allowed, at: now });
   if (insertError) console.error("gate: erro gravando evento", insertError);
 
   return text(allowed ? "liberado" : "barrado");

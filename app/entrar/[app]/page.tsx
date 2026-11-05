@@ -16,7 +16,7 @@ export default async function EntrarPage({ params }: { params: Promise<{ app: st
   const config = APPS[app];
 
   const { data: active } = await db()
-    .from("passes")
+    .from("porteiro_passes")
     .select("*")
     .eq("app", app)
     .gt("expires_at", new Date().toISOString())
