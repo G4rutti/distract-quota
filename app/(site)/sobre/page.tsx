@@ -8,7 +8,7 @@ import { Manifesto } from "./manifesto";
 import { Door } from "./door";
 import { LimitRuler } from "./limit-ruler";
 import { Browser } from "./browser";
-import { Mark } from "./logo";
+import { Spotlight } from "./pass";
 import { IntroGate } from "./intro-gate";
 import { SmoothScroll } from "./smooth";
 
@@ -107,27 +107,25 @@ export default function Sobre() {
         </div>
       </section>
 
-      <section className="relative overflow-clip bg-[var(--pt-fog)] pt-24 md:pt-32" aria-labelledby="pt-end-h">
-        <div className="pt-wrap flex flex-col gap-8">
-          <h2 id="pt-end-h" className="max-w-[20ch] text-[clamp(1.8rem,3.4vw,2.8rem)] font-semibold leading-[1.1] tracking-[-0.025em]">
-            O código tá aberto. Sobe o teu e marca o primeiro passe hoje.
+      {/* fim da v1: o holofote segue o cursor e a seção ocupa a largura toda */}
+      <Spotlight className="bg-[var(--pt-fog)] py-24 md:py-36" labelledBy="pt-end-h">
+        <div className="pt-wrap flex flex-col items-start gap-8">
+          <h2 id="pt-end-h" className="pt-hero-h1 max-w-[16ch] text-[clamp(2.4rem,6vw,4.6rem)] [text-wrap:balance]">
+            O código tá aberto. Sobe o teu.
           </h2>
           <div className="flex flex-wrap gap-3">
-            <a href={REPO} className="pt-btn bg-[var(--pt-acc)] text-[var(--pt-paper)] hover:bg-[var(--pt-acc-deep)]">
-              <GithubLogo size={18} weight="bold" aria-hidden /> G4rutti/distract-quota
+            <a href={REPO} className="pt-btn pt-btn-sq bg-[var(--pt-acc)] text-[var(--pt-paper)] hover:bg-[var(--pt-acc-deep)]">
+              <GithubLogo size={18} aria-hidden /> G4rutti/distract-quota
             </a>
-            <a href={`${REPO}#1-supabase`} className="pt-btn border border-[var(--pt-line)] hover:border-[var(--pt-ink)]">
-              Guia de instalação <ArrowUpRight size={18} weight="bold" aria-hidden />
+            <a href={`${REPO}#1-supabase`} className="pt-btn pt-btn-sq border border-[var(--pt-line)] hover:border-[var(--pt-ink)]">
+              Guia de instalação <ArrowUpRight size={18} aria-hidden />
             </a>
           </div>
         </div>
-        <p className="pt-display mt-16 flex items-end justify-center gap-[2vw] whitespace-nowrap px-[2vw] text-[21vw] leading-[0.74]" aria-hidden>
-          <Mark size={0} className="h-[0.74em] w-[0.74em] flex-none" accent="var(--pt-acc)" />
-          Porteiro
-        </p>
-      </section>
+      </Spotlight>
 
-      <footer className="border-t border-[var(--pt-line)] bg-[var(--pt-paper)] text-[var(--pt-mute)]">
+      <footer className="bg-[var(--pt-paper)] text-[var(--pt-mute)]">
+        <div className="pt-wrap"><div className="border-t border-[var(--pt-line)]" /></div>
         <div className="pt-wrap flex flex-col gap-6 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-10 text-[14px]">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <span className="text-[var(--pt-ink)]">Porteiro, feito por Davi Garutti.</span>

@@ -1,3 +1,4 @@
+/* lp-forge: vibe-ok fotos-inclinadas · as rotações são do carimbo LIBERADO e do passe do hero (vindos da v1); não há fotos */
 /* Landing v2 do Porteiro.
    Direção: tudo claro, com o verde do app (o mesmo do "passe liberado") como único acento.
    Display condensada pesada (Sofia Sans Extra Condensed), texto em Onest, números em Martian Mono.
@@ -384,4 +385,131 @@
     transform: none;
     opacity: 0;
   }
+}
+
+/* ---------- hero da v1 ---------- */
+.pt-hero-h1 {
+  font-family: var(--font-geist-sans), var(--pt-text);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.04em;
+}
+.pt-btn-sq {
+  border-radius: 14px;
+  min-height: 48px;
+  font-weight: 500;
+}
+
+/* pílula: largura real + letras que entram uma a uma */
+.pt-pill {
+  position: relative;
+  display: inline-block;
+  padding: 0 0.28em;
+  white-space: nowrap;
+}
+.pt-pill-bg {
+  position: absolute;
+  inset: 0.06em 0;
+  border-radius: 0.26em;
+  background: var(--pt-acc-soft);
+  transform-origin: left center;
+}
+.pt-pill-word {
+  position: relative;
+  display: inline-block;
+}
+.pt-letter {
+  display: inline-block;
+  animation: pt-letter 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes pt-letter {
+  from {
+    opacity: 0;
+    transform: translateY(0.5em) rotate(8deg);
+    filter: blur(8px);
+  }
+}
+
+/* passe do visitante */
+.pt-pass-stage {
+  perspective: 1100px;
+  display: flex;
+  justify-content: center;
+}
+.pt-pass {
+  position: relative;
+  width: min(100%, 340px);
+  padding: 24px 22px 26px;
+  background: var(--pt-paper);
+  color: var(--pt-ink);
+  font-family: var(--pt-mono);
+  font-variant-numeric: tabular-nums;
+  border-radius: 4px;
+  transform-style: preserve-3d;
+  box-shadow:
+    0 0 0 1px var(--pt-line),
+    0 40px 70px -30px oklch(0.2 0.01 262 / 0.35);
+  overflow: hidden;
+  --shine-x: 50%;
+  --shine-y: 50%;
+}
+.pt-perf {
+  border-top: 2px dashed oklch(0.2 0.01 262 / 0.22);
+  margin-inline: -16px;
+}
+.pt-shine {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(420px circle at var(--shine-x) var(--shine-y), oklch(1 0 0 / 0.6), transparent 45%);
+  mix-blend-mode: soft-light;
+}
+.pt-stamp {
+  position: absolute;
+  padding: 4px 10px;
+  border: 3px solid currentColor;
+  border-radius: 6px;
+  color: var(--pt-acc);
+  font-family: var(--font-geist-sans), var(--pt-text);
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: 0.06em;
+  transform: rotate(-12deg);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  opacity: 0;
+}
+.pt-stamp[data-on="true"] {
+  animation: pt-stamp 520ms cubic-bezier(0.2, 0.9, 0.25, 1.2) both;
+}
+@keyframes pt-stamp {
+  0% {
+    opacity: 0;
+    transform: rotate(-4deg) scale(2.1);
+  }
+  55% {
+    opacity: 0.95;
+    transform: rotate(-13deg) scale(0.94);
+  }
+  100% {
+    opacity: 0.9;
+    transform: rotate(-12deg) scale(1);
+  }
+}
+
+/* ---------- holofote do fim: ocupa a largura toda ---------- */
+.pt-spot {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  --spot-x: 20%;
+  --spot-y: 40%;
+}
+.pt-spot::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(620px circle at var(--spot-x) var(--spot-y), oklch(0.5 0.14 140 / 0.16), transparent 70%);
+  pointer-events: none;
 }

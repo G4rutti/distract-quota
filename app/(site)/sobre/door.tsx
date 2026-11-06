@@ -3,15 +3,16 @@
 // A porta, jogável: o mesmo caminho do app (10s, motivo, tempo, passe), dentro de um celular desenhado em CSS.
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowCounterClockwise, ArrowUpRight } from "@phosphor-icons/react";
+import { ArrowCounterClockwise, ArrowUpRight, InstagramLogo, TiktokLogo, XLogo, type Icon } from "@phosphor-icons/react";
 import { DotCount } from "./dot-count";
 import { Mark } from "./logo";
 
 type AppKey = "tiktok" | "instagram" | "x";
-const APPS: { key: AppKey; name: string; letter: string; bg: string }[] = [
-  { key: "tiktok", name: "TikTok", letter: "T", bg: "#16181D" },
-  { key: "instagram", name: "Instagram", letter: "I", bg: "#4B5160" },
-  { key: "x", name: "X", letter: "X", bg: "#2A2E36" },
+// Glifos de marca do Phosphor (mesma lib da logo do GitHub), em branco sobre tile neutro.
+const APPS: { key: AppKey; name: string; icon: Icon; bg: string }[] = [
+  { key: "tiktok", name: "TikTok", icon: TiktokLogo, bg: "#16181D" },
+  { key: "instagram", name: "Instagram", icon: InstagramLogo, bg: "#4B5160" },
+  { key: "x", name: "X", icon: XLogo, bg: "#2A2E36" },
 ];
 
 type Step = "home" | "wait" | "why" | "pass";
@@ -94,7 +95,7 @@ export function Door({ wait, intents, minutes }: { wait: number; intents: string
             </div>
 
             {step === "home" && (
-              <div className="flex h-[calc(100%-40px)] flex-col justify-between px-6 pb-8 pt-10">
+              <div className="flex h-[calc(100%-40px)] flex-col gap-10 px-6 pb-8 pt-10">
                 <div>
                   <p className="pt-label text-[var(--pt-mute)]">Experimenta</p>
                   <p className="mt-2 text-[22px] font-semibold leading-tight tracking-[-0.02em]">Toca num app pra abrir.</p>
@@ -103,10 +104,10 @@ export function Door({ wait, intents, minutes }: { wait: number; intents: string
                   {APPS.map((a) => (
                     <button key={a.key} type="button" onClick={() => open(a)} className="group flex flex-col items-center gap-2">
                       <span
-                        className="pt-display grid aspect-square w-full place-items-center rounded-[22%] text-[40px] text-[var(--pt-paper)] transition-transform duration-200 group-active:scale-95"
+                        className="grid aspect-square w-full place-items-center rounded-[22%] text-[var(--pt-paper)] transition-transform duration-200 group-active:scale-95"
                         style={{ background: a.bg }}
                       >
-                        {a.letter}
+                        <a.icon size="52%" weight="fill" aria-hidden />
                       </span>
                       <span className="text-[12px] font-medium">{a.name}</span>
                     </button>

@@ -1,29 +1,41 @@
 "use client";
 
-// Hero: título que sobe linha por linha enquanto as folhas da porta de abertura giram.
+// Hero da v1 trazido pra v2: a frase com a pílula que troca de app, e o passe do visitante,
+// que cai inclinado quando a porta de abertura abre e leva o carimbo LIBERADO.
 
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowDown, GithubLogo } from "@phosphor-icons/react";
 import { Wordmark } from "./logo";
 import { onGateOpen } from "./intro-gate";
+import { HeroPass, SwapPill } from "./pass";
 
 export function Hero({ repo }: { repo: string }) {
   const root = useRef<HTMLElement>(null);
 
-  // entrada do texto: espera a porta de abertura começar a abrir
   useEffect(() => {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    gsap.registerPlugin(ScrollTrigger);
     let ctx: gsap.Context | undefined;
     const hide = gsap.context(() => {
-      gsap.set("[data-h-line] > span", { yPercent: 105 });
-      gsap.set("[data-h-fade]", { opacity: 0, y: 14 });
+      gsap.set("[data-h-line] > span", { yPercent: 110 });
+      gsap.set("[data-h-fade]", { autoAlpha: 0, y: 18 });
+      gsap.set("[data-hero-pass]", { autoAlpha: 0, y: 60, rotation: 8 });
     }, root);
     const off = onGateOpen((late) => {
       ctx = gsap.context(() => {
-        const d = late ? 0.1 : 0.55; // vindo da porta, entra enquanto as folhas abrem
-        gsap.to("[data-h-line] > span", { yPercent: 0, duration: 1.1, ease: "expo.out", stagger: 0.09, delay: d });
-        gsap.to("[data-h-fade]", { opacity: 1, y: 0, duration: 0.9, ease: "expo.out", stagger: 0.08, delay: d + 0.45 });
+        const tl = gsap.timeline({ delay: late ? 0.1 : 0.55 });
+        tl.to("[data-h-line] > span", { yPercent: 0, duration: 1.1, ease: "expo.out", stagger: 0.09 })
+          .to("[data-h-fade]", { autoAlpha: 1, y: 0, duration: 0.8, ease: "power3.out", stagger: 0.08 }, "-=0.7")
+          .to("[data-hero-pass]", { autoAlpha: 1, y: 0, rotation: -4, duration: 1.2, ease: "elastic.out(1, 0.75)" }, "-=0.9");
+        // o passe sobe mais devagar que a página e gira um pouco
+        gsap.to("[data-hero-pass]", {
+          yPercent: -18,
+          rotation: 6,
+          ease: "none",
+          scrollTrigger: { trigger: root.current, start: "top top", end: "bottom top", scrub: true },
+        });
       }, root);
     });
     return () => {
@@ -34,7 +46,7 @@ export function Hero({ repo }: { repo: string }) {
   }, []);
 
   return (
-    <section ref={root} className="flex min-h-[92svh] flex-col bg-[var(--pt-paper)]" aria-labelledby="pt-h1">
+    <section ref={root} className="bg-[var(--pt-paper)]" aria-labelledby="pt-h1">
       <header className="pt-wrap flex h-[68px] items-center justify-between gap-4 pt-[env(safe-area-inset-top)]">
         <a href="#" aria-label="Porteiro, início" className="rounded-md">
           <Wordmark />
@@ -53,32 +65,34 @@ export function Hero({ repo }: { repo: string }) {
         </nav>
       </header>
 
-      <div className="pt-wrap flex flex-1 flex-col justify-center pb-20 pt-10">
-        <h1 id="pt-h1" className="pt-display text-[clamp(4.4rem,10.4vw,10.6rem)]">
-          <span data-h-line className="pt-line">
-            <span>Dez segundos</span>
-          </span>
-          <span data-h-line className="pt-line">
-            <span>
-              entre você <span className="text-[var(--pt-acc)]">e o feed.</span>
+      <div className="pt-wrap grid min-h-[calc(100svh-68px)] items-center gap-14 pb-20 pt-10 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] md:pb-24">
+        <div className="flex min-w-0 flex-col gap-8">
+          <h1 id="pt-h1" className="pt-hero-h1 text-[clamp(2.8rem,6.4vw,5.6rem)]">
+            <span data-h-line className="pt-line">
+              <span>
+                O <SwapPill words={["TikTok", "Instagram", "X"]} />
+              </span>
             </span>
-          </span>
-        </h1>
-
-        <div className="mt-10 flex flex-col gap-7 md:mt-14 md:flex-row md:items-end md:justify-between">
-          <p data-h-fade className="max-w-[44ch] text-[18px] leading-[1.55] text-[var(--pt-mute)]">
-            Sem passe, o Porteiro abre por cima do TikTok, do Instagram e do X. Você espera, diz pra quê vai entrar e por quanto tempo. Aí abre.
+            <span data-h-line className="pt-line">
+              <span>só abre passando</span>
+            </span>
+            <span data-h-line className="pt-line">
+              <span>por aqui.</span>
+            </span>
+          </h1>
+          <p data-h-fade className="max-w-[46ch] text-[18px] leading-[1.6] text-[var(--pt-mute)]">
+            Sem passe, o Porteiro aparece por cima do app: 10 segundos de espera, você diz pra quê vai entrar e por quanto tempo. Só aí abre. Tu acabou de passar por ele.
           </p>
-
-          <div data-h-fade className="flex flex-wrap items-center gap-3">
-            <a href="#porta" className="pt-btn bg-[var(--pt-acc)] text-[var(--pt-paper)] hover:bg-[var(--pt-acc-deep)]">
-              Testar a porta <ArrowDown size={18} weight="bold" aria-hidden />
+          <div data-h-fade className="flex flex-wrap gap-3">
+            <a href="#porta" className="pt-btn pt-btn-sq bg-[var(--pt-acc)] text-[var(--pt-paper)] hover:bg-[var(--pt-acc-deep)]">
+              Testar a porta <ArrowDown size={18} aria-hidden />
             </a>
-            <a href={repo} className="pt-btn border border-[var(--pt-line)] hover:border-[var(--pt-ink)]">
-              <GithubLogo size={18} weight="bold" aria-hidden /> Ver o código
+            <a href={repo} className="pt-btn pt-btn-sq border border-[var(--pt-line)] hover:border-[var(--pt-ink)]">
+              <GithubLogo size={18} aria-hidden /> Ver o código
             </a>
           </div>
         </div>
+        <HeroPass />
       </div>
     </section>
   );
