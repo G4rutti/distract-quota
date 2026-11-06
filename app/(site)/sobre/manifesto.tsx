@@ -4,6 +4,7 @@
 // Marque trechos com *asterisco* pra eles acenderem em vermelho.
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { REFS, Ref } from "./ref";
 
 export function Manifesto({ text, label }: { text: string; label: string }) {
   const section = useRef<HTMLElement>(null);
@@ -45,7 +46,10 @@ export function Manifesto({ text, label }: { text: string; label: string }) {
   return (
     <section ref={section} className="relative h-[200vh] bg-[var(--pt-paper)]" aria-label={label}>
       <div className="pt-wrap sticky top-0 flex h-[100svh] flex-col justify-center gap-8">
-        <p className="pt-label text-[var(--pt-mute)]">{label}</p>
+        <div className="flex flex-wrap items-center gap-4">
+          <p className="pt-label text-[var(--pt-mute)]">{label}</p>
+          <Ref item={REFS.words} />
+        </div>
         <p className="max-w-[22ch] text-[clamp(2rem,4.6vw,4.1rem)] font-semibold leading-[1.08] tracking-[-0.025em]">
           {/* texto inteiro pra leitor de tela; as palavras animadas ficam escondidas dele */}
           <span className="sr-only">{text.replace(/\*/g, "")}</span>

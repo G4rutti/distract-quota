@@ -5,6 +5,7 @@
 // Aqui ela anda ao contrário: quanto mais tu desce, mais o feed some pra dentro do rolo.
 
 import { useEffect, useRef, useState } from "react";
+import { REFS, Ref } from "./ref";
 
 const HANDLES = [
   "@cortes.do.dia", "@receita_em_1min", "@memes.br", "@treino.rapido", "@viagem.barata", "@unboxing.br",
@@ -100,6 +101,7 @@ export function FeedRoll() {
           <p className="pt-mono text-[13px] text-[var(--pt-mute-dark)]" aria-hidden>
             <span className="text-[var(--pt-paper)]">{String(wound).padStart(2, "0")}</span> / {HANDLES.length} posts enrolados
           </p>
+          <Ref item={REFS.roll} tone="dark" />
         </div>
 
         <div className="pt-roll-stage relative min-h-0 flex-1 max-md:[&>*]:scale-[0.78]" aria-hidden>

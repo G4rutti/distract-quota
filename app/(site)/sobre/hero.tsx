@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ArrowDown, GithubLogo } from "@phosphor-icons/react";
 import { Wordmark } from "./logo";
+import { REFS, Ref } from "./ref";
 
 const HOLD_MS = 10_000;
 const TAU = Math.PI * 2;
@@ -271,6 +272,7 @@ export function Hero({ repo }: { repo: string }) {
             </a>
           </div>
         </div>
+        <Ref item={REFS.clocks} tone="red" className="mt-8" />
         <p id="pt-hold-hint" className="sr-only">
           Mantenha pressionado por dez segundos. Se soltar antes, a contagem volta pro zero, igual no app.
         </p>

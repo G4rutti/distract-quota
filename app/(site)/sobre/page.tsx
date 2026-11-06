@@ -9,6 +9,8 @@ import { Door } from "./door";
 import { LimitRuler } from "./limit-ruler";
 import { Browser } from "./browser";
 import { Mark } from "./logo";
+import { Toasts } from "./toasts";
+import { REFS as REF_ITEMS, Ref } from "./ref";
 
 const REPO = "https://github.com/G4rutti/distract-quota";
 
@@ -30,13 +32,7 @@ const SETUP = [
   { n: "Extensão", body: "Carrega a pasta extension no Chrome. Mesmo passe e mesmo limite do celular." },
 ];
 
-const REFS = [
-  { who: "A. L. Crego", what: "campo de relógios", url: "https://recent.design/i/3vq05qv-time" },
-  { who: "Phi Hoang", what: "rolo do feed", url: "https://recent.design/i/bky6wkw-infinite-scroll-3d-concept" },
-  { who: "Profound", what: "texto que acende", url: "https://recent.design/i/q4fzfg0-profound-website-redesign" },
-  { who: "davidope", what: "números de pontos", url: "https://recent.design/i/cqt5k5j-dotted-countdown" },
-  { who: "Contemporary Type", what: "régua de numerais", url: "https://recent.design/i/4m1bbar-kinetic-type-reel" },
-];
+const REFS = Object.values(REF_ITEMS);
 
 export default function Sobre() {
   return (
@@ -44,6 +40,24 @@ export default function Sobre() {
       <Hero repo={REPO} />
 
       <FeedRoll />
+
+      <section className="bg-[var(--pt-fog)] py-24 md:py-32" aria-labelledby="pt-call-h">
+        <div className="pt-wrap grid items-center gap-12 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <div className="flex flex-col gap-5">
+            <p className="pt-label text-[var(--pt-mute)]">02 · O chamado</p>
+            <h2 id="pt-call-h" className="pt-display text-[clamp(3rem,6.6vw,5.8rem)]">
+              Toda notificação é um <span className="text-[var(--pt-red)]">convite pra voltar.</span>
+            </h2>
+            <p className="max-w-[42ch] text-[17px] leading-[1.55] text-[var(--pt-mute)]">
+              Elas continuam chegando, o Porteiro não mexe nisso. Quando tu toca numa e o app abre sem passe, ele tá na porta.
+            </p>
+            <Ref item={REF_ITEMS.toasts} />
+          </div>
+          <div className="flex justify-center md:justify-end">
+            <Toasts />
+          </div>
+        </div>
+      </section>
 
       <Manifesto
         label="Em uma frase"
@@ -53,12 +67,13 @@ export default function Sobre() {
       <section id="porta" className="scroll-mt-4 bg-[var(--pt-ink)] py-24 text-[var(--pt-paper)] md:py-32" aria-labelledby="pt-door-h">
         <div className="pt-wrap flex flex-col gap-14">
           <div className="flex flex-col gap-5">
-            <p className="pt-label text-[var(--pt-mute-dark)]">02 · A porta</p>
+            <p className="pt-label text-[var(--pt-mute-dark)]">03 · A porta</p>
             <h2 id="pt-door-h" className="pt-display max-w-[22ch] text-[clamp(3.2rem,7vw,6.4rem)]">
               Testa aí. <span className="text-[var(--pt-red)]">É a porta de verdade.</span>
             </h2>
           </div>
           <Door wait={BREATH_SECONDS} intents={INTENTS} minutes={MINUTE_OPTIONS} />
+          <Ref item={REF_ITEMS.dots} tone="dark" />
         </div>
       </section>
 
@@ -67,7 +82,7 @@ export default function Sobre() {
       <section className="bg-[var(--pt-fog)] py-24 md:py-32" aria-labelledby="pt-pc-h">
         <div className="pt-wrap grid items-center gap-12 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
           <div className="flex flex-col gap-5">
-            <p className="pt-label text-[var(--pt-mute)]">04 · No computador</p>
+            <p className="pt-label text-[var(--pt-mute)]">05 · No computador</p>
             <h2 id="pt-pc-h" className="pt-display text-[clamp(3rem,6.4vw,5.6rem)]">
               A extensão fecha a porta dos fundos.
             </h2>
@@ -83,7 +98,7 @@ export default function Sobre() {
         <div className="pt-wrap flex flex-col gap-14">
           <div className="flex flex-wrap items-end justify-between gap-6">
             <div className="flex flex-col gap-5">
-              <p className="pt-label text-[var(--pt-mute)]">05 · Por baixo</p>
+              <p className="pt-label text-[var(--pt-mute)]">06 · Por baixo</p>
               <h2 id="pt-setup-h" className="pt-display max-w-[12ch] text-[clamp(3rem,6.4vw,5.6rem)]">
                 Um app só teu, na tua conta.
               </h2>
