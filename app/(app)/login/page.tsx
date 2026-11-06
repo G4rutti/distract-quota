@@ -11,8 +11,8 @@ export default async function LoginPage({
   return (
     <main className="flex min-h-[80dvh] flex-col justify-center gap-8">
       <div className="flex flex-col gap-2">
-        <h1 className="flex items-center gap-3 text-3xl font-semibold tracking-tight">
-          <BrandMark size={34} /> Porteiro
+        <h1 className="display flex items-center gap-3 text-[3.6rem]">
+          <BrandMark size={42} /> Porteiro
         </h1>
         <p className="max-w-[34ch] text-muted">
           Entra uma vez neste navegador. Se usar o app pela tela de início também, entra lá separado.

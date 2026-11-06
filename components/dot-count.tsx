@@ -1,13 +1,15 @@
 "use client";
 
-// Contagem de 10 a 0 com números feitos de pontos que se rearranjam a cada segundo.
-// Técnica do "Dotted Countdown" de davidope (garimpado no Godly/Recent Design), com o anel de 60 pontos marcando o tempo.
+// Contagem com números feitos de pontos que se rearranjam a cada segundo, e um anel de 60 pontos marcando o tempo.
+// Técnica do "Dotted Countdown" de davidope (garimpado no Godly/Recent Design). Usado na landing e na porta do app.
+// Sem cor fixa, lê --text e --accent do tema, então acompanha claro e escuro.
 
 import { useEffect, useRef } from "react";
 
 type P = { x: number; y: number; tx: number; ty: number; a: number; ta: number };
 
-export function DotCount({ seconds, total = 10, size = 220, color = "#16181D", accent = "#2F751D" }: {
+export function DotCount({ seconds, total = 10, size = 220, color, accent }: {
+  /** Segundos que faltam; pode ser fracionário, o anel anda suave. */
   seconds: number;
   total?: number;
   size?: number;
@@ -33,6 +35,15 @@ export function DotCount({ seconds, total = 10, size = 220, color = "#16181D", a
     let raf = 0;
     let alive = true;
     let shownKey = "";
+    let frame = 0;
+    let ink = color ?? "#16181D";
+    let acc = accent ?? "#2F751D";
+    const readTheme = () => {
+      const cs = getComputedStyle(canvas);
+      if (!color) ink = cs.getPropertyValue("--text").trim() || ink;
+      if (!accent) acc = cs.getPropertyValue("--accent").trim() || acc;
+    };
+    readTheme();
 
     const sample = (txt: string) => {
       const cached = st.shapes.get(txt);
@@ -83,8 +94,9 @@ export function DotCount({ seconds, total = 10, size = 220, color = "#16181D", a
       });
     };
 
-    const frame = () => {
+    const draw = () => {
       if (!alive) return;
+      if (++frame % 30 === 0) readTheme(); // troca de tema claro/escuro no meio da contagem
       const key = String(Math.max(0, Math.ceil(st.target)));
       if (key !== shownKey) {
         shownKey = key;
@@ -99,7 +111,8 @@ export function DotCount({ seconds, total = 10, size = 220, color = "#16181D", a
       for (let i = 0; i < 60; i++) {
         const ang = (i / 60) * Math.PI * 2 - Math.PI / 2;
         const on = i / 60 < left;
-        ctx.fillStyle = on ? accent : "rgba(22,24,29,0.14)";
+        ctx.globalAlpha = on ? 1 : 0.16;
+        ctx.fillStyle = on ? acc : ink;
         ctx.beginPath();
         ctx.arc(size / 2 + Math.cos(ang) * ringR, size / 2 + Math.sin(ang) * ringR, on ? 2.2 : 1.6, 0, Math.PI * 2);
         ctx.fill();
@@ -112,18 +125,18 @@ export function DotCount({ seconds, total = 10, size = 220, color = "#16181D", a
         p.a += (p.ta - p.a) * 0.18;
         if (p.a < 0.02) continue;
         ctx.globalAlpha = p.a;
-        ctx.fillStyle = color;
+        ctx.fillStyle = ink;
         ctx.beginPath();
         ctx.arc(p.x, p.y, r, 0, Math.PI * 2);
         ctx.fill();
       }
       ctx.globalAlpha = 1;
-      raf = requestAnimationFrame(frame);
+      raf = requestAnimationFrame(draw);
     };
 
     document.fonts.load(`860 40px "Sofia Sans Extra Condensed Variable"`).finally(() => {
       st.shapes.clear();
-      raf = requestAnimationFrame(frame);
+      raf = requestAnimationFrame(draw);
     });
     return () => {
       alive = false;

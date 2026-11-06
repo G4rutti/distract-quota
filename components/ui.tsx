@@ -1,21 +1,75 @@
 // Peças visuais compartilhadas entre as telas. Tudo server component, sem estado.
+// Mesma linguagem da landing: títulos e números na condensada, rótulos em mono, régua de minutos.
+
+import { BrandMark } from "./brand-mark";
 
 export function PageHeader({ title, aside }: { title: string; aside?: React.ReactNode }) {
   return (
-    <header className="flex items-baseline justify-between gap-4">
-      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-      {aside && <span className="text-sm text-muted">{aside}</span>}
+    <header className="flex flex-col gap-4">
+      <span className="flex items-center gap-2 text-sm font-semibold tracking-tight">
+        <BrandMark size={20} /> Porteiro
+      </span>
+      <div className="flex items-end justify-between gap-4">
+        <h1 className="display text-[3.6rem]">{title}</h1>
+        {aside && <span className="label pb-1.5 text-right text-muted">{aside}</span>}
+      </div>
     </header>
   );
 }
 
 export function SectionTitle({ children, aside, id }: { children: React.ReactNode; aside?: React.ReactNode; id?: string }) {
   return (
-    <div className="flex items-baseline justify-between gap-4">
-      <h2 id={id} className="text-lg font-medium">
+    <div className="flex items-end justify-between gap-4">
+      <h2 id={id} className="display text-[1.9rem]">
         {children}
       </h2>
-      {aside && <span className="text-sm text-muted">{aside}</span>}
+      {aside && <span className="label pb-1 text-right text-muted">{aside}</span>}
+    </div>
+  );
+}
+
+/**
+ * Régua de minutos (a da landing): um traço por minuto (ou por 5, se o limite for grande).
+ * Traço cheio = usado; o do limite fica no acento e mais alto. Passou do limite, a régua cresce até o usado.
+ */
+export function Ruler({ value, limit, compact = false, label }: { value: number; limit: number; compact?: boolean; label: string }) {
+  const used = Math.max(0, Math.round(value));
+  const step = Math.max(limit, used) > 90 ? 5 : 1;
+  const max = Math.ceil(Math.max(limit, used) / step) * step;
+  const ticks = Array.from({ length: max / step + 1 }, (_, k) => k * step);
+  const h = compact ? 14 : 30;
+  return (
+    <div className="flex flex-col gap-1.5" role="img" aria-label={label}>
+      <div className="relative" style={{ height: h + (compact ? 4 : 10) }} aria-hidden>
+        {ticks.map((m) => {
+          const atLimit = m === Math.ceil(limit / step) * step;
+          const major = m % (step * 5) === 0;
+          const on = m > 0 && m <= used;
+          return (
+            <span
+              key={m}
+              className={`absolute bottom-0 rounded-full ${atLimit ? "bg-accent" : on ? (m > limit ? "bg-text" : "bg-text/80") : "bg-line"}`}
+              style={{
+                left: `${(m / max) * 100}%`,
+                width: atLimit ? 3 : 2,
+                marginLeft: atLimit ? -1.5 : -1,
+                height: atLimit ? h + (compact ? 4 : 10) : major ? h : h * 0.55,
+              }}
+            />
+          );
+        })}
+      </div>
+      {!compact && (
+        <div className="relative h-4 text-[11px] text-muted" aria-hidden>
+          {ticks
+            .filter((m) => m % (step * (max > 120 ? 30 : max > 60 ? 15 : 10)) === 0)
+            .map((m) => (
+              <span key={m} className="num absolute -translate-x-1/2" style={{ left: `${(m / max) * 100}%` }}>
+                {m}
+              </span>
+            ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -99,7 +153,7 @@ export function Stat({ label, value, sub }: { label: string; value: React.ReactN
   return (
     <div className="flex flex-col gap-1">
       <span className="text-sm text-muted">{label}</span>
-      <span className="num text-3xl font-medium leading-none">{value}</span>
+      <span className="display text-[2.6rem]">{value}</span>
       {sub && <span className="text-sm text-muted">{sub}</span>}
     </div>
   );

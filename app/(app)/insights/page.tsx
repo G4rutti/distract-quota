@@ -52,7 +52,7 @@ export default async function InsightsPage() {
           Resumo da semana
         </h2>
         <p className="flex items-baseline gap-2">
-          <span className="num text-[4.5rem] font-medium leading-[0.9]">{Math.round(r.thisWeek.avg)}</span>
+          <span className="display text-[7rem] leading-[0.8] text-accent">{Math.round(r.thisWeek.avg)}</span>
           <span className="text-xl text-muted">min por dia</span>
         </p>
         <p>
@@ -83,7 +83,7 @@ export default async function InsightsPage() {
         ) : (
           <>
             <p className="flex items-baseline gap-2">
-              <span className="num text-4xl font-medium">{formatHours(r.recoveredTotal)}</span>
+              <span className="display text-[3.2rem]">{formatHours(r.recoveredTotal)}</span>
             </p>
             <p className="text-sm text-muted">
               desde o começo, abaixo da tua média inicial de {Math.round(r.baseline!)} min por dia

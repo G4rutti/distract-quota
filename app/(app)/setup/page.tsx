@@ -21,7 +21,7 @@ export default async function SetupPage() {
       </header>
 
       <div className="flex flex-col gap-3">
-        <h1 className="text-3xl font-semibold tracking-tight">Atalhos do iPhone</h1>
+        <h1 className="display text-[3.2rem]">Atalhos do iPhone</h1>
         <p className="text-muted">
           Duas automações por app no Atalhos, aba Automação, tipo &quot;App&quot;. Marca &quot;Executar imediatamente&quot; e
           desliga &quot;Notificar ao executar&quot;.

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowRight } from "@phosphor-icons/react/dist/ssr";
 import { LoadError } from "@/components/load-error";
-import { Bars, Delta, PageHeader, SectionTitle } from "@/components/ui";
+import { Bars, Delta, PageHeader, Ruler, SectionTitle } from "@/components/ui";
 import { APPS, APP_IDS, LIMITS } from "@/lib/config";
 import { perAppLimit } from "@/lib/limits";
 import { fmtDate, fmtTime } from "@/lib/format";
@@ -29,10 +29,14 @@ export default async function Hoje() {
         <h2 id="tempo" className="sr-only">
           Tempo de tela hoje
         </h2>
-        <p className="flex items-baseline gap-2">
-          <span className="num text-[5.5rem] font-medium leading-[0.9]">{total}</span>
-          <span className="text-xl text-muted">min</span>
+        <p className="flex items-end gap-3">
+          <span className={`display text-[8.5rem] leading-[0.78] ${left < 0 ? "" : "text-accent"}`}>{total}</span>
+          <span className="flex flex-col pb-1.5 text-base font-medium leading-tight">
+            <span>min hoje</span>
+            <span className="label text-muted">de {m.limits.total}</span>
+          </span>
         </p>
+        <Ruler value={total} limit={m.limits.total} label={`${total} de ${m.limits.total} minutos usados hoje`} />
         <p className="text-base">
           {left >= 0 ? (
             <>
@@ -64,24 +68,18 @@ export default async function Hoje() {
         <ul className="divide-y divide-line border-y border-line">
           {APP_IDS.map((id) => {
             const used = Math.round(m.today.perApp[id]);
-            const pct = Math.min(100, (used / m.limits.perApp) * 100);
             const pass = m.activePass[id];
             return (
               <li key={id}>
                 <Link href={`/entrar/${id}`} className="press flex flex-col gap-2.5 py-4 active:bg-surface">
                   <span className="flex items-center justify-between gap-4">
-                    <span className="text-lg font-medium">{APPS[id].name}</span>
+                    <span className="display text-[1.9rem]">{APPS[id].name}</span>
                     <span className="flex items-center gap-2 text-sm font-medium">
                       Entrar
                       <ArrowRight size={18} weight="bold" aria-hidden />
                     </span>
                   </span>
-                  <span className="h-1.5 overflow-hidden rounded-full bg-line" aria-hidden>
-                    <span
-                      className={`block h-full rounded-full ${used > m.limits.perApp ? "bg-text" : "bg-accent"}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </span>
+                  <Ruler compact value={used} limit={m.limits.perApp} label={`${APPS[id].name}: ${used} de ${m.limits.perApp} minutos`} />
                   <span className="text-sm text-muted">
                     <span className="num text-text">{used}</span> de {m.limits.perApp} min
                     {pass && <>, liberado até {fmtTime(pass.expiresAt)}</>}
@@ -140,7 +138,8 @@ function LimitSchedule({ m }: { m: Model }) {
   const daysToDrop = daysLeft + (k - week - 1) * 7;
   return (
     <section aria-labelledby="limite" className="flex flex-col gap-2 rounded-ui bg-surface p-5">
-      <h2 id="limite" className="font-medium">
+      <p className="label text-muted">O limite</p>
+      <h2 id="limite" className="display text-[1.9rem]">
         Semana {week + 1} do programa
       </h2>
       <p className="text-sm text-muted">

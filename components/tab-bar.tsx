@@ -30,10 +30,11 @@ export function TabBar() {
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
-                className={`press flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] ${
+                className={`press relative flex min-h-14 flex-col items-center justify-center gap-1 text-[11px] uppercase tracking-[0.06em] ${
                   active ? "font-semibold text-text" : "text-muted"
                 }`}
               >
+                {active && <span className="absolute top-0 h-[3px] w-8 rounded-b-full bg-accent" aria-hidden />}
                 <Icon size={22} weight={active ? "fill" : "regular"} aria-hidden />
                 {label}
               </Link>

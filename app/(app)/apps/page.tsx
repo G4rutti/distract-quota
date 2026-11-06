@@ -69,7 +69,7 @@ function AppSection({ id, m }: { id: AppId; m: Model }) {
 
       {passes.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h3 className="text-sm font-medium">Últimas entradas</h3>
+          <h3 className="label text-muted">Últimas entradas</h3>
           <ul className="divide-y divide-line">
             {passes.map((p) => (
               <PassRow key={p.id} p={p} />
@@ -112,7 +112,7 @@ function Num({ label, value, sub }: { label: string; value: number | string; sub
   return (
     <div className="flex flex-col gap-1">
       <span className="text-sm text-muted">{label}</span>
-      <span className="num text-3xl font-medium leading-none">{value}</span>
+      <span className="display text-[2.6rem]">{value}</span>
       <span className="text-xs text-muted">{sub}</span>
     </div>
   );

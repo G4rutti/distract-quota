@@ -41,6 +41,7 @@
   --radius-ui: var(--radius);
   --font-sans: var(--font-geist-sans), ui-sans-serif, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+  --font-display: "Sofia Sans Extra Condensed Variable", "Arial Narrow", sans-serif;
 }
 
 html {
@@ -59,6 +60,25 @@ body {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.04em;
+}
+
+/* Títulos e números grandes na condensada da landing. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 780;
+  font-variation-settings: "wght" 780;
+  text-transform: uppercase;
+  line-height: 0.88;
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Rótulo pequeno em mono, caixa alta (o "01 · O problema" da landing). */
+.label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 @layer base {

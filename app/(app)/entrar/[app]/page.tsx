@@ -6,6 +6,7 @@ import { fmtTime } from "@/lib/format";
 import { getEntryInfo } from "@/lib/stats";
 import { EntryFlow } from "./entry-flow";
 import { OpenAppLinks } from "./open-app-links";
+import { BrandMark } from "@/components/brand-mark";
 
 export const dynamic = "force-dynamic";
 
@@ -34,16 +35,25 @@ export default async function EntrarPage({
   if (active) {
     const pass = active as PassRow;
     return (
-      <main className="flex min-h-[80dvh] flex-col justify-center gap-8">
-        <div className="flex flex-col gap-3">
-          <p className="text-sm text-muted">{config.name}</p>
-          <h1 className="text-3xl font-semibold tracking-tight">Liberado até {fmtTime(pass.expires_at)}</h1>
-          {pass.intent && <p className="text-muted">Você entrou pra: {pass.intent}</p>}
+      <main className="fixed inset-0 z-20 flex flex-col bg-accent text-accent-ink">
+        <div className="mx-auto flex w-full max-w-[460px] flex-1 flex-col px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))]">
+          <p className="label flex items-center gap-2 opacity-80">
+            <BrandMark size={16} className="[--accent:currentColor]" /> Passe · {config.name}
+          </p>
+          <div className="flex flex-1 flex-col justify-center gap-6">
+            <h1 className="display flex flex-col text-[clamp(4.5rem,24vw,7rem)]">
+              <span>Liberado</span>
+              <span className="opacity-70">até {fmtTime(pass.expires_at)}</span>
+            </h1>
+            {pass.intent && <p className="max-w-[34ch] text-base leading-relaxed">Você entrou pra: {pass.intent}</p>}
+          </div>
+          <div className="flex flex-col gap-1">
+            <OpenAppLinks name={config.name} openUrl={openUrl} schemeUrl={config.schemeUrl} tone="onAccent" />
+            <Link href="/" className="flex min-h-11 items-center justify-center text-sm underline underline-offset-4 opacity-80">
+              Voltar pro início
+            </Link>
+          </div>
         </div>
-        <OpenAppLinks name={config.name} openUrl={openUrl} schemeUrl={config.schemeUrl} />
-        <Link href="/" className="flex min-h-11 items-center justify-center text-sm text-muted underline underline-offset-4">
-          Voltar pro início
-        </Link>
       </main>
     );
   }

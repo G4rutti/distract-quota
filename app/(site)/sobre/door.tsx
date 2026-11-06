@@ -4,7 +4,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ArrowCounterClockwise, ArrowUpRight, InstagramLogo, TiktokLogo, XLogo, type Icon } from "@phosphor-icons/react";
-import { DotCount } from "./dot-count";
+import { DotCount } from "@/components/dot-count";
 import { Mark } from "./logo";
 
 type AppKey = "tiktok" | "instagram" | "x";

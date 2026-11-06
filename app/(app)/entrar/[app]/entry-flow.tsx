@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition } from "react";
+import { BrandMark } from "@/components/brand-mark";
+import { DotCount } from "@/components/dot-count";
 import { BREATH_SECONDS, MINUTE_OPTIONS, TIMEZONE } from "@/lib/config";
 import { createPass } from "./actions";
 import { OpenAppLinks } from "./open-app-links";
@@ -18,7 +20,7 @@ const QUICK_INTENTS = ["Responder DM", "Postar algo", "Ver algo que me mandaram"
 const timeFmt = new Intl.DateTimeFormat("pt-BR", { timeZone: TIMEZONE, hour: "2-digit", minute: "2-digit" });
 
 export function EntryFlow({ app, todayMinutes, goal, last }: Props) {
-  const remaining = useBreath(BREATH_SECONDS);
+  const { remaining, precise } = useBreath(BREATH_SECONDS);
   const [step, setStep] = useState<"breath" | "choose" | "open">("breath");
   const [intent, setIntent] = useState("");
   const [minutes, setMinutes] = useState<number>(MINUTE_OPTIONS[1]);
@@ -51,14 +53,12 @@ export function EntryFlow({ app, todayMinutes, goal, last }: Props) {
 
   if (step === "breath") {
     return (
-      <main className="flex min-h-[85dvh] flex-col justify-between gap-10 py-4">
-        <p className="text-sm text-muted">{app.name}</p>
+      <main className="flex min-h-[85dvh] flex-col justify-between gap-8 py-4">
+        <GateTop name={app.name} />
 
-        <div className="flex flex-col gap-6">
-          <span className="num text-[11rem] font-medium leading-[0.8]" aria-hidden>
-            {remaining}
-          </span>
-          <h1 ref={headingRef} tabIndex={-1} className="max-w-[22ch] text-2xl font-medium leading-snug tracking-tight outline-none">
+        <div className="flex flex-col items-center gap-7 text-center">
+          <DotCount seconds={precise} total={BREATH_SECONDS} size={256} />
+          <h1 ref={headingRef} tabIndex={-1} className="max-w-[22ch] text-2xl font-medium leading-snug tracking-tight outline-none [text-wrap:balance]">
             Respira. O {app.name} continua lá daqui a {remaining} {remaining === 1 ? "segundo" : "segundos"}.
           </h1>
           <Reminder last={last} todayMinutes={todayMinutes} goal={goal} />
@@ -74,10 +74,10 @@ export function EntryFlow({ app, todayMinutes, goal, last }: Props) {
   if (step === "choose") {
     const canRelease = intent.trim().length > 0 && !pending;
     return (
-      <main className="flex min-h-[85dvh] flex-col gap-10 py-4">
-        <p className="text-sm text-muted">{app.name}</p>
-        <h1 ref={headingRef} tabIndex={-1} className="text-3xl font-semibold tracking-tight outline-none">
-          Pra quê você vai entrar?
+      <main className="flex min-h-[85dvh] flex-col gap-9 py-4">
+        <GateTop name={app.name} />
+        <h1 ref={headingRef} tabIndex={-1} className="display text-[3.4rem] outline-none">
+          Pra quê vai abrir o {app.name}?
         </h1>
 
         <div className="flex flex-col gap-3">
@@ -100,8 +100,8 @@ export function EntryFlow({ app, todayMinutes, goal, last }: Props) {
                 type="button"
                 onClick={() => setIntent(q)}
                 aria-pressed={intent === q}
-                className={`press min-h-11 rounded-full border px-4 text-sm ${
-                  intent === q ? "border-accent bg-accent-soft font-medium" : "border-line"
+                className={`press min-h-11 rounded-full border-[1.5px] px-4 text-sm font-medium ${
+                  intent === q ? "border-text bg-text text-bg" : "border-line"
                 }`}
               >
                 {q}
@@ -111,17 +111,18 @@ export function EntryFlow({ app, todayMinutes, goal, last }: Props) {
         </div>
 
         <fieldset className="flex flex-col gap-3">
-          <legend className="mb-3 text-sm font-medium">Por quanto tempo</legend>
+          <legend className="mb-3 text-sm font-medium">Por quanto tempo?</legend>
           <div className="grid grid-cols-4 gap-2">
             {MINUTE_OPTIONS.map((m) => (
               <label
                 key={m}
-                className={`press flex h-14 cursor-pointer items-center justify-center rounded-ui border text-base has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent ${
-                  minutes === m ? "border-accent bg-accent-soft font-semibold" : "border-line"
+                className={`press flex h-16 cursor-pointer flex-col items-center justify-center rounded-ui border-[1.5px] has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-accent ${
+                  minutes === m ? "border-text bg-text text-bg" : "border-line"
                 }`}
               >
                 <input type="radio" name="minutes" value={m} checked={minutes === m} onChange={() => setMinutes(m)} className="sr-only" />
-                <span className="num">{m}</span>&nbsp;min
+                <span className="display text-[1.9rem]">{m}</span>
+                <span className="label -mt-0.5 opacity-70">min</span>
               </label>
             ))}
           </div>
@@ -149,17 +150,34 @@ export function EntryFlow({ app, todayMinutes, goal, last }: Props) {
     );
   }
 
+  // o passe: tela inteira no acento, como na demo da landing
   return (
-    <main className="flex min-h-[85dvh] flex-col justify-center gap-8 py-4">
-      <div className="flex flex-col gap-3">
-        <p className="text-sm text-muted">{app.name}</p>
-        <h1 ref={headingRef} tabIndex={-1} className="text-3xl font-semibold tracking-tight outline-none">
-          Liberado até {expiresAt ? timeFmt.format(new Date(expiresAt)) : ""}
-        </h1>
-        <p className="text-muted">No celular, sair na hora fica contigo. No computador, a extensão fecha quando acabar.</p>
+    <main className="fixed inset-0 z-20 flex flex-col bg-accent text-accent-ink">
+      <div className="mx-auto flex w-full max-w-[460px] flex-1 flex-col px-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))]">
+        <p className="label flex items-center gap-2 opacity-80">
+          <BrandMark size={16} className="[--accent:currentColor]" /> Passe · {app.name}
+        </p>
+        <div className="flex flex-1 flex-col justify-center gap-6">
+          <h1 ref={headingRef} tabIndex={-1} className="display flex flex-col text-[clamp(4.5rem,24vw,7rem)] outline-none">
+            <span>Liberado</span>
+            <span className="opacity-70">até {expiresAt ? timeFmt.format(new Date(expiresAt)) : ""}</span>
+          </h1>
+          <p className="max-w-[34ch] text-base leading-relaxed">
+            {intent ? `${intent}. ` : ""}
+            {minutes} minutos. No celular, sair na hora fica contigo. No computador, a extensão fecha quando acabar.
+          </p>
+        </div>
+        <OpenAppLinks name={app.name} openUrl={app.openUrl} schemeUrl={app.schemeUrl} tone="onAccent" />
       </div>
-      <OpenAppLinks name={app.name} openUrl={app.openUrl} schemeUrl={app.schemeUrl} />
     </main>
+  );
+}
+
+function GateTop({ name }: { name: string }) {
+  return (
+    <p className="flex items-center gap-2 text-sm font-medium">
+      <BrandMark size={18} /> Porteiro · {name}
+    </p>
   );
 }
 
@@ -167,7 +185,7 @@ function Reminder({ last, todayMinutes, goal }: Pick<Props, "last" | "todayMinut
   if (last) {
     const overran = last.used > last.asked + 1;
     return (
-      <p className="max-w-[36ch] text-base text-muted">
+      <p className="max-w-[34ch] text-base text-muted">
         Da última vez você pediu <span className="num text-text">{last.asked}</span> min
         {last.intent ? ` pra "${last.intent}"` : ""}
         {overran ? (
@@ -194,6 +212,7 @@ function Reminder({ last, todayMinutes, goal }: Pick<Props, "last" | "todayMinut
 /** Conta regressiva que só anda com a aba visível: trocar de app não pula a espera. */
 function useBreath(seconds: number) {
   const [remaining, setRemaining] = useState(seconds);
+  const [precise, setPrecise] = useState(seconds); // pro anel andar suave; a regra continua a mesma
   useEffect(() => {
     let left = seconds * 1000;
     let lastTick = performance.now();
@@ -205,9 +224,10 @@ function useBreath(seconds: number) {
       lastTick = now;
       const next = Math.max(0, Math.ceil(left / 1000));
       setRemaining(next);
+      setPrecise(Math.max(0, left / 1000));
       if (left <= 0) window.clearInterval(id);
     }, 200);
     return () => window.clearInterval(id);
   }, [seconds]);
-  return remaining;
+  return { remaining, precise };
 }

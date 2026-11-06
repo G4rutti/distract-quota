@@ -1,3 +1,4 @@
+import "@fontsource-variable/sofia-sans-extra-condensed";
 import { TabBar } from "@/components/tab-bar";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
