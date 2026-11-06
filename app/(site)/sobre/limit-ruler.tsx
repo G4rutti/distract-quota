@@ -5,7 +5,6 @@
 // Os valores chegam prontos de perAppLimit(), a mesma função que o app usa.
 
 import { useEffect, useRef, useState } from "react";
-import { REFS, Ref } from "./ref";
 
 export function LimitRuler({ weeks, start, floor, cut }: { weeks: number[]; start: number; floor: number; cut: number }) {
   const section = useRef<HTMLElement>(null);
@@ -43,7 +42,7 @@ export function LimitRuler({ weeks, start, floor, cut }: { weeks: number[]; star
       <div className="pt-wrap sticky top-0 flex h-[100svh] flex-col justify-center gap-10">
         <div className="flex flex-wrap items-end justify-between gap-6">
           <div className="flex max-w-[46rem] flex-col gap-5">
-            <p className="pt-label text-[var(--pt-mute)]">04 · O limite</p>
+            <p className="pt-label text-[var(--pt-mute)]">03 · O limite</p>
             <h2 id="pt-limit-h" className="pt-display text-[clamp(3.2rem,7vw,6.4rem)]">
               Começa folgado. Aperta toda semana.
             </h2>
@@ -101,7 +100,6 @@ export function LimitRuler({ weeks, start, floor, cut }: { weeks: number[]; star
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-4">
         <ol className="pt-mono flex flex-wrap gap-x-5 gap-y-2 text-[12px]" aria-label="Limite por semana">
           {weeks.map((m, i) => (
             <li key={i} className="transition-colors duration-300" style={{ color: i === k ? "var(--pt-ink)" : "var(--pt-mute)" }}>
@@ -109,8 +107,6 @@ export function LimitRuler({ weeks, start, floor, cut }: { weeks: number[]; star
             </li>
           ))}
         </ol>
-        <Ref item={REFS.ruler} />
-        </div>
       </div>
     </section>
   );
