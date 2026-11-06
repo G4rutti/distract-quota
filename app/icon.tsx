@@ -1,17 +1,19 @@
 import { ImageResponse } from "next/og";
+import { BRAND, MARK, sectorPath } from "@/lib/brand";
 
 export const size = { width: 512, height: 512 };
 export const contentType = "image/png";
 
-// Uma catraca vista de cima: barra de passagem + pino. Só formas, sem letra.
+// Porta em arco com o mostrador no topo; o setor vermelho são os 10s de espera (60 graus).
+// Fundo preto, batente branco: aparece bem tanto na tela inicial clara quanto na escura.
 export function mark(px: number) {
-  const s = px / 512;
+  const inner = Math.round(px * 0.72);
   return (
-    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: "#14161a" }}>
-      <div style={{ position: "relative", width: 300 * s, height: 300 * s, display: "flex" }}>
-        <div style={{ position: "absolute", left: 0, top: 120 * s, width: 300 * s, height: 60 * s, borderRadius: 30 * s, background: "#c6f24a" }} />
-        <div style={{ position: "absolute", left: 105 * s, top: 105 * s, width: 90 * s, height: 90 * s, borderRadius: 45 * s, background: "#14161a", border: `${18 * s}px solid #c6f24a` }} />
-      </div>
+    <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", background: BRAND.ink }}>
+      <svg width={inner} height={inner} viewBox={MARK.viewBox}>
+        <path d={MARK.frame} fill="none" stroke={BRAND.paper} strokeWidth={MARK.frameWidth} />
+        <path d={sectorPath(60)} fill={BRAND.red} />
+      </svg>
     </div>
   );
 }

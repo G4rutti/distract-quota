@@ -7,8 +7,8 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Redes sociais só entram passando por aqui.",
     start_url: "/",
     display: "standalone",
-    background_color: "#14161a",
-    theme_color: "#14161a",
+    background_color: "#141110",
+    theme_color: "#141110",
     icons: [
       { src: "/icon", sizes: "512x512", type: "image/png" },
       { src: "/apple-icon", sizes: "180x180", type: "image/png" },

@@ -1,208 +1,154 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ArrowDown, ArrowUpRight, GithubLogo } from "@phosphor-icons/react/dist/ssr";
-import { LIMITS } from "@/lib/config";
+import { ArrowUpRight, GithubLogo } from "@phosphor-icons/react/dist/ssr";
+import { BREATH_SECONDS, LIMITS, MINUTE_OPTIONS } from "@/lib/config";
 import { perAppLimit } from "@/lib/limits";
-import { DoorDemo } from "./door-demo";
-import { ExtensionDemo, LimitBars, Rise } from "./motion";
-import { HeroPass, ScrollFX, Spotlight, SwapPill, Ticker } from "./fx";
-import { IntroGate } from "./intro-gate";
+import { Hero } from "./hero";
+import { FeedRoll } from "./feed-roll";
+import { Manifesto } from "./manifesto";
+import { Door } from "./door";
+import { LimitRuler } from "./limit-ruler";
+import { Browser } from "./browser";
+import { Mark } from "./logo";
 
 const REPO = "https://github.com/G4rutti/distract-quota";
 
 export const metadata: Metadata = {
-  title: "Porteiro: TikTok, Instagram e X só entram passando por aqui",
+  title: "Porteiro: dez segundos entre você e o feed",
   description:
-    "Sem passe, o Porteiro aparece por cima do app: 10 segundos de espera, você diz pra quê vai entrar e por quanto tempo. Código aberto, roda na tua Vercel.",
+    "Sem passe, o Porteiro abre por cima do TikTok, do Instagram e do X: 10 segundos de espera, um motivo e um tempo. Código aberto, roda na tua Vercel.",
   robots: { index: true, follow: true },
 };
 
-// A mesma curva que o app usa: começa em 60 min por app e cai 15% por semana até o piso.
-const WEEKS = Array.from({ length: 10 }, (_, w) => ({ label: String(w + 1), minutes: perAppLimit(w) }));
-const FLOOR_WEEK = WEEKS.findIndex((w) => w.minutes === LIMITS.floorPerApp) + 1;
+// Mesmas fontes de verdade do app.
+const WEEKS = Array.from({ length: 10 }, (_, w) => perAppLimit(w));
+const INTENTS = ["Responder DM", "Postar algo", "Ver algo que me mandaram", "Só passar o tempo"];
 
-const FLOW = `abre o TikTok ─▶ automação "Ao abrir" ─▶ GET /api/gate?app=tiktok
-                                         │
-                 "liberado" ◀─ tem passe ┤
-                                         │
-                                         └─ sem passe ─▶ /entrar/tiktok
-                                                         10s ─▶ motivo + tempo ─▶ passe
+const SETUP = [
+  { n: "Supabase", body: "Projeto no plano free, região São Paulo. Roda a migration e copia a URL e a secret key." },
+  { n: "Vercel", body: "Importa o repo e põe 3 variáveis. As funções já vêm fixadas em gru1, do lado do banco." },
+  { n: "Atalhos", body: "Automações de abrir e fechar pra cada app. A página /setup monta as URLs prontas pra copiar." },
+  { n: "Extensão", body: "Carrega a pasta extension no Chrome. Mesmo passe e mesmo limite do celular." },
+];
 
-fecha o TikTok ─▶ automação "Ao fechar" ─▶ GET /api/event?app=tiktok`;
-
-const INTENTS = ["Responder DM", "5 min", "Postar algo", "10 min", "Ver algo que me mandaram", "15 min", "Só passar o tempo", "30 min"];
-
-const STEPS = [
-  { title: "Supabase", body: "Um projeto no plano free, região São Paulo. Roda a migration e copia a URL e a secret key." },
-  { title: "Vercel", body: "Importa o repo, põe as 3 variáveis. As funções já vêm fixadas em gru1, perto do banco." },
-  { title: "Atalhos", body: "Quatro automações: abrir e fechar, pra TikTok e Instagram. A página /setup monta as URLs pra copiar." },
-  { title: "Extensão", body: "Carrega a pasta extension no Chrome. Mesmo passe e mesmo limite do celular." },
+const REFS = [
+  { who: "A. L. Crego", what: "campo de relógios", url: "https://recent.design/i/3vq05qv-time" },
+  { who: "Phi Hoang", what: "rolo do feed", url: "https://recent.design/i/bky6wkw-infinite-scroll-3d-concept" },
+  { who: "Profound", what: "texto que acende", url: "https://recent.design/i/q4fzfg0-profound-website-redesign" },
+  { who: "davidope", what: "números de pontos", url: "https://recent.design/i/cqt5k5j-dotted-countdown" },
+  { who: "Contemporary Type", what: "régua de numerais", url: "https://recent.design/i/4m1bbar-kinetic-type-reel" },
 ];
 
 export default function Sobre() {
   return (
-    <div className="bg-bg text-text">
-      <IntroGate />
-      <ScrollFX />
-      <header className="lp-wrap flex h-16 items-center justify-between gap-4 pt-[env(safe-area-inset-top)]">
-        <span className="text-[17px] font-semibold tracking-tight">Porteiro</span>
-        <nav className="flex items-center gap-1 text-sm sm:gap-2" aria-label="Principal">
-          <a href="#porta" className="hidden min-h-10 items-center rounded-full px-3 text-muted hover:text-text sm:flex">
-            Como funciona
-          </a>
-          <a href={REPO} className="flex min-h-10 items-center gap-1.5 rounded-full px-3 text-muted hover:text-text">
-            <GithubLogo size={18} aria-hidden /> GitHub
-          </a>
-          <Link href="/login" className="lp-btn flex min-h-10 items-center rounded-full border border-line px-4 font-medium">
-            Entrar
-          </Link>
-        </nav>
-      </header>
+    <>
+      <Hero repo={REPO} />
 
-      {/* hero: a frase de um lado, o passe do visitante do outro */}
-      <section
-        data-hero
-        className="lp-wrap grid min-h-[calc(100svh-4rem)] items-center gap-14 pb-20 pt-10 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] md:pb-24"
-      >
-        <div className="flex min-w-0 flex-col gap-8">
-          <h1 className="text-[clamp(2.6rem,6vw,5.2rem)] font-semibold leading-[1.0] tracking-[-0.04em]">
-            <span data-hero-line>
-              <span>
-                O <SwapPill words={["TikTok", "Instagram", "X"]} />
-              </span>
-            </span>
-            <span data-hero-line>
-              <span>só abre passando</span>
-            </span>
-            <span data-hero-line>
-              <span>por aqui.</span>
-            </span>
-          </h1>
-          <p data-hero-fade className="max-w-[46ch] text-lg leading-relaxed text-muted">
-            Sem passe, o Porteiro aparece por cima do app: 10 segundos de espera, você diz pra quê vai entrar e por quanto tempo. Só aí abre. Tu acabou de passar por ele.
-          </p>
-          <div data-hero-fade className="flex flex-wrap gap-3">
-            <a href="#porta" className="lp-btn flex h-12 items-center gap-2 rounded-[var(--radius)] bg-accent px-5 font-medium text-accent-ink">
-              Testar a porta <ArrowDown size={18} aria-hidden />
-            </a>
-            <a href={REPO} className="lp-btn flex h-12 items-center gap-2 rounded-[var(--radius)] border border-line px-5 font-medium">
-              <GithubLogo size={18} aria-hidden /> Ver o código
-            </a>
-          </div>
-        </div>
-        <HeroPass />
-      </section>
+      <FeedRoll />
 
-      <Ticker items={INTENTS} />
+      <Manifesto
+        label="Em uma frase"
+        text={`Abriu o app sem passe? O Porteiro entra na frente. Tu espera *${BREATH_SECONDS} segundos,* escolhe o motivo e o tempo, e o passe *vence sozinho.* Fechou o app, ele anota quanto tu ficou de verdade.`}
+      />
 
-      {/* a porta, jogável */}
-      <section id="porta" className="scroll-mt-6 border-y border-line bg-surface py-24 md:py-32">
-        <div className="lp-wrap flex flex-col gap-14">
-          <Rise className="flex max-w-[60ch] flex-col gap-4">
-            <p className="lp-eyebrow">A porta</p>
-            <h2 data-reveal className="text-[clamp(2rem,4.2vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.03em] [text-wrap:balance]">
-              Tenta abrir. É assim que o celular responde.
+      <section id="porta" className="scroll-mt-4 bg-[var(--pt-ink)] py-24 text-[var(--pt-paper)] md:py-32" aria-labelledby="pt-door-h">
+        <div className="pt-wrap flex flex-col gap-14">
+          <div className="flex flex-col gap-5">
+            <p className="pt-label text-[var(--pt-mute-dark)]">02 · A porta</p>
+            <h2 id="pt-door-h" className="pt-display max-w-[22ch] text-[clamp(3.2rem,7vw,6.4rem)]">
+              Testa aí. <span className="text-[var(--pt-red)]">É a porta de verdade.</span>
             </h2>
-            <p className="text-lg leading-relaxed text-muted">
-              Os mesmos 10 segundos, os mesmos motivos e os mesmos tempos do app. O passe sai impresso, com hora de validade, e vence sozinho.
-            </p>
-          </Rise>
-          <DoorDemo />
-        </div>
-      </section>
-
-      {/* o limite que cai */}
-      <section data-limit className="lp-wrap grid gap-12 py-24 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] md:py-32">
-        <Rise className="flex min-w-0 flex-col gap-4">
-          <p className="lp-eyebrow">O limite</p>
-          <h2 data-reveal className="text-[clamp(2rem,4.2vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.03em] [text-wrap:balance]">
-            Começa folgado e aperta toda semana.
-          </h2>
-          <p className="max-w-[44ch] text-lg leading-relaxed text-muted">
-            {LIMITS.startPerApp} minutos por app na primeira semana, {Math.round(LIMITS.weeklyCut * 100)}% a menos a cada semana, arredondado de 5 em 5, até parar em {LIMITS.floorPerApp}. O limite do dia é a soma dos apps.
-          </p>
-          <p className="text-sm text-muted">
-            Na semana {FLOOR_WEEK} chega no piso. Os números do gráfico saem da mesma função que o app usa.
-          </p>
-        </Rise>
-        <div className="flex min-w-0 flex-col gap-8 self-end">
-          <p className="flex items-baseline gap-3" aria-hidden>
-            <span data-limit-number data-values={WEEKS.map((w) => w.minutes).join(",")} className="num text-[clamp(6rem,14vw,11rem)] font-medium leading-[0.8]">
-              {WEEKS[0].minutes}
-            </span>
-            <span className="text-xl text-muted">min por app</span>
-          </p>
-          <LimitBars weeks={WEEKS} />
-          <p className="mt-3 text-xs text-muted">Semana do programa · minutos por app, por dia.</p>
-        </div>
-      </section>
-
-      {/* no computador */}
-      <section className="lp-wrap grid gap-12 pb-24 md:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] md:items-center md:pb-32">
-        <div data-browser className="order-2 min-w-0 md:order-1">
-          <ExtensionDemo />
-        </div>
-        <Rise className="order-1 flex min-w-0 flex-col gap-4 md:order-2">
-          <p className="lp-eyebrow">No computador</p>
-          <h2 data-reveal className="text-[clamp(2rem,4.2vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.03em] [text-wrap:balance]">
-            A extensão fecha a porta dos fundos.
-          </h2>
-          <p className="max-w-[44ch] text-lg leading-relaxed text-muted">
-            tiktok.com, instagram.com e x.com no Chrome caem na mesma porta. O passe liberado no celular vale no PC, e o tempo soma no mesmo limite.
-          </p>
-        </Rise>
-      </section>
-
-      {/* por baixo */}
-      <section className="border-t border-line bg-surface py-24 md:py-32">
-        <div className="lp-wrap flex flex-col gap-14">
-          <Rise className="flex max-w-[60ch] flex-col gap-4">
-            <p className="lp-eyebrow">Por baixo</p>
-            <h2 data-reveal className="text-[clamp(2rem,4.2vw,3.2rem)] font-semibold leading-[1.05] tracking-[-0.03em] [text-wrap:balance]">
-              Um app só teu, na tua conta.
-            </h2>
-            <p className="text-lg leading-relaxed text-muted">
-              Next.js 16, Supabase e Vercel. Os Atalhos do iPhone avisam quando o app abre e fecha; abertura liberada mais o próximo fechamento vira uma sessão. Dali saem os minutos do dia, a semana e os horários de pico.
-            </p>
-          </Rise>
-
-          <div className="overflow-x-auto rounded-[var(--radius)] border border-line bg-bg">
-            <pre className="num min-w-[720px] p-6 text-[13px] leading-[1.7] tracking-normal text-muted">{FLOW}</pre>
           </div>
+          <Door wait={BREATH_SECONDS} intents={INTENTS} minutes={MINUTE_OPTIONS} />
+        </div>
+      </section>
 
-          <ol className="grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-4">
-            {STEPS.map((s, k) => (
-              <li key={s.title} className="flex flex-col gap-2 border-t border-line pt-5">
-                <span className="num text-sm text-muted">{k + 1}</span>
-                <h3 className="text-lg font-semibold tracking-tight">{s.title}</h3>
-                <p className="leading-relaxed text-muted">{s.body}</p>
+      <LimitRuler weeks={WEEKS} start={LIMITS.startPerApp} floor={LIMITS.floorPerApp} cut={LIMITS.weeklyCut} />
+
+      <section className="bg-[var(--pt-fog)] py-24 md:py-32" aria-labelledby="pt-pc-h">
+        <div className="pt-wrap grid items-center gap-12 md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+          <div className="flex flex-col gap-5">
+            <p className="pt-label text-[var(--pt-mute)]">04 · No computador</p>
+            <h2 id="pt-pc-h" className="pt-display text-[clamp(3rem,6.4vw,5.6rem)]">
+              A extensão fecha a porta dos fundos.
+            </h2>
+            <p className="max-w-[42ch] text-[17px] leading-[1.55] text-[var(--pt-mute)]">
+              tiktok.com, instagram.com e x.com no Chrome caem na mesma porta, com o mesmo passe e o mesmo limite do iPhone.
+            </p>
+          </div>
+          <Browser wait={BREATH_SECONDS} />
+        </div>
+      </section>
+
+      <section className="bg-[var(--pt-paper)] py-24 md:py-32" aria-labelledby="pt-setup-h">
+        <div className="pt-wrap flex flex-col gap-14">
+          <div className="flex flex-wrap items-end justify-between gap-6">
+            <div className="flex flex-col gap-5">
+              <p className="pt-label text-[var(--pt-mute)]">05 · Por baixo</p>
+              <h2 id="pt-setup-h" className="pt-display max-w-[12ch] text-[clamp(3rem,6.4vw,5.6rem)]">
+                Um app só teu, na tua conta.
+              </h2>
+            </div>
+            <p className="max-w-[38ch] text-[17px] leading-[1.55] text-[var(--pt-mute)]">
+              Next.js 16, Supabase e Vercel. Abertura liberada mais o próximo fechamento vira uma sessão: daí saem o dia, a semana e os horários de pico.
+            </p>
+          </div>
+          <ol className="grid border-t-2 border-[var(--pt-ink)] sm:grid-cols-2 lg:grid-cols-4">
+            {SETUP.map((s, k) => (
+              <li key={s.n} className="flex flex-col gap-3 border-b border-[var(--pt-line)] py-7 sm:pr-8 lg:border-b-0 lg:border-r lg:px-6 lg:first:pl-0 lg:last:border-r-0">
+                <span className="pt-mono text-[13px] text-[var(--pt-red-deep)]">0{k + 1}</span>
+                <h3 className="pt-display text-[2.6rem]">{s.n}</h3>
+                <p className="text-[16px] leading-[1.55] text-[var(--pt-mute)]">{s.body}</p>
               </li>
             ))}
           </ol>
         </div>
       </section>
 
-      {/* fim */}
-      <Spotlight className="lp-wrap flex flex-col items-start gap-8 py-24 md:py-36">
-        <h2 data-reveal className="max-w-[16ch] text-[clamp(2.4rem,6vw,4.6rem)] font-semibold leading-[1.02] tracking-[-0.035em] [text-wrap:balance]">
-          O código tá aberto. Sobe o teu.
-        </h2>
-        <div className="flex flex-wrap gap-3">
-          <a href={REPO} className="lp-btn flex h-12 items-center gap-2 rounded-[var(--radius)] bg-accent px-5 font-medium text-accent-ink">
-            <GithubLogo size={18} aria-hidden /> G4rutti/distract-quota
-          </a>
-          <a href={`${REPO}#1-supabase`} className="lp-btn flex h-12 items-center gap-2 rounded-[var(--radius)] border border-line px-5 font-medium">
-            Guia de instalação <ArrowUpRight size={18} aria-hidden />
-          </a>
+      <section className="relative overflow-clip bg-[var(--pt-red)] pt-24 md:pt-32" aria-labelledby="pt-end-h">
+        <div className="pt-wrap flex flex-col gap-8">
+          <h2 id="pt-end-h" className="max-w-[20ch] text-[clamp(1.8rem,3.4vw,2.8rem)] font-semibold leading-[1.1] tracking-[-0.025em]">
+            O código tá aberto. Sobe o teu e marca o primeiro passe hoje.
+          </h2>
+          <div className="flex flex-wrap gap-3">
+            <a href={REPO} className="pt-btn bg-[var(--pt-ink)] text-[var(--pt-paper)]">
+              <GithubLogo size={18} weight="bold" aria-hidden /> G4rutti/distract-quota
+            </a>
+            <a href={`${REPO}#1-supabase`} className="pt-btn border-2 border-[var(--pt-ink)] hover:bg-[var(--pt-ink)] hover:text-[var(--pt-red)]">
+              Guia de instalação <ArrowUpRight size={18} weight="bold" aria-hidden />
+            </a>
+          </div>
         </div>
-      </Spotlight>
+        <p className="pt-display mt-16 flex items-end justify-center gap-[2vw] whitespace-nowrap px-[2vw] text-[21vw] leading-[0.74]" aria-hidden>
+          <Mark size={0} className="h-[0.74em] w-[0.74em] flex-none" accent="var(--pt-paper)" />
+          Porteiro
+        </p>
+      </section>
 
-      <footer className="lp-wrap flex flex-wrap items-center justify-between gap-4 border-t border-line pb-[max(2rem,env(safe-area-inset-bottom))] pt-8 text-sm text-muted">
-        <span>Porteiro, feito por Davi Garutti.</span>
-        <Link href="/login" className="min-h-10 content-center underline underline-offset-4">
-          Já é teu? Entrar
-        </Link>
+      <footer className="bg-[var(--pt-ink)] text-[var(--pt-mute-dark)]">
+        <div className="pt-wrap flex flex-col gap-6 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-10 text-[14px]">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <span className="text-[var(--pt-paper)]">Porteiro, feito por Davi Garutti.</span>
+            <a href="/login" className="flex min-h-11 items-center underline underline-offset-4 hover:text-[var(--pt-paper)]">
+              Já é teu? Entrar
+            </a>
+          </div>
+          <p className="max-w-[80ch] leading-[1.6]">
+            Técnicas de movimento estudadas no{" "}
+            <a href="https://recent.design" className="underline underline-offset-4 hover:text-[var(--pt-paper)]">
+              Recent Design
+            </a>
+            :{" "}
+            {REFS.map((r, i) => (
+              <span key={r.url}>
+                <a href={r.url} className="underline underline-offset-4 hover:text-[var(--pt-paper)]">
+                  {r.what}
+                </a>{" "}
+                ({r.who}){i < REFS.length - 1 ? ", " : "."}
+              </span>
+            ))}
+          </p>
+        </div>
       </footer>
-    </div>
+    </>
   );
 }
