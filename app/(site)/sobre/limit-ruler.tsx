@@ -51,7 +51,7 @@ export function LimitRuler({ weeks, start, floor, cut }: { weeks: number[]; star
             </p>
           </div>
           <p className="flex items-end gap-3" aria-live="polite">
-            <span className="pt-display text-[clamp(8rem,20vw,15rem)] leading-[0.78] tabular-nums text-[var(--pt-red)]">{limit}</span>
+            <span className="pt-display text-[clamp(8rem,20vw,15rem)] leading-[0.78] tabular-nums text-[var(--pt-acc-deep)]">{limit}</span>
             <span className="flex flex-col pb-2 text-[15px] font-medium leading-tight">
               <span>min por app</span>
               <span className="pt-mono text-[var(--pt-mute)]">semana {k + 1}</span>
@@ -71,7 +71,7 @@ export function LimitRuler({ weeks, start, floor, cut }: { weeks: number[]; star
                   style={{
                     left: `${(m / max) * 100}%`,
                     height: major ? 46 : 22,
-                    color: m === limit ? "var(--pt-red)" : over ? "var(--pt-line)" : "var(--pt-ink)",
+                    color: m === limit ? "var(--pt-acc)" : over ? "var(--pt-line)" : "var(--pt-ink)",
                     transform: `scaleY(${over ? 0.45 : 1})`,
                     transition: "transform 500ms var(--pt-ease), color 300ms linear",
                     transitionDelay: `${Math.abs(m - limit) * 8}ms`,
@@ -95,7 +95,7 @@ export function LimitRuler({ weeks, start, floor, cut }: { weeks: number[]; star
               className="absolute left-0 top-0 h-full w-full"
               style={{ transform: `translateX(${(limit / max) * 100}%)`, transition: "transform 600ms var(--pt-ease)" }}
             >
-              <span className="absolute left-0 top-0 h-full w-[2px] -translate-x-1/2 bg-[var(--pt-red)]" />
+              <span className="absolute left-0 top-0 h-full w-[2px] -translate-x-1/2 bg-[var(--pt-acc)]" />
             </span>
           </span>
         </div>
@@ -103,7 +103,7 @@ export function LimitRuler({ weeks, start, floor, cut }: { weeks: number[]; star
         <ol className="pt-mono flex flex-wrap gap-x-5 gap-y-2 text-[12px]" aria-label="Limite por semana">
           {weeks.map((m, i) => (
             <li key={i} className="transition-colors duration-300" style={{ color: i === k ? "var(--pt-ink)" : "var(--pt-mute)" }}>
-              S{i + 1} <span className={i === k ? "text-[var(--pt-red-deep)]" : ""}>{m}</span>
+              S{i + 1} <span className={i === k ? "text-[var(--pt-acc-deep)]" : ""}>{m}</span>
             </li>
           ))}
         </ol>

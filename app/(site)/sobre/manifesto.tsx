@@ -54,7 +54,7 @@ export function Manifesto({ text, label }: { text: string; label: string }) {
               <span
                 key={i}
                 className="pt-word"
-                style={{ color: i < lit ? (x.hot ? "var(--pt-red-deep)" : "var(--pt-ink)") : "oklch(0.86 0.004 250)" }}
+                style={{ color: i < lit ? (x.hot ? "var(--pt-acc-deep)" : "var(--pt-ink)") : "oklch(0.86 0.004 250)" }}
               >
                 {x.w}{" "}
               </span>

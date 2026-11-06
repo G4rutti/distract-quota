@@ -16,8 +16,8 @@ const HANDLES = [
 const PITCH = 72; // altura do post + espaço
 const R = 86; // raio do rolo
 
-// Cinzas e um ou outro vermelho: thumbnails abstratos, sem foto de ninguém.
-const THUMB = ["#2a2524", "#5b5655", "#9c9897", "#cfcccb", "#F2471E", "#3d3836", "#7a7574", "#b5b1b0"];
+// Cinzas frios e um ou outro azul: thumbnails abstratos, sem foto de ninguém.
+const THUMB = ["#2A2E36", "#4B5160", "#8E94A0", "#C9CDD4", "#2F7BEF", "#3A3F4A", "#6B7180", "#B1B6BF"];
 
 export function FeedRoll() {
   const section = useRef<HTMLElement>(null);
@@ -92,7 +92,7 @@ export function FeedRoll() {
         <div className="relative z-10 flex flex-col justify-center gap-5 pt-16 md:gap-6 md:pt-0">
           <p className="pt-label text-[var(--pt-mute-dark)]">01 · O problema</p>
           <h2 id="pt-feed-h" className="pt-display text-[clamp(3rem,8vw,7.4rem)]">
-            O feed não tem <span className="text-[var(--pt-red)]">última página.</span>
+            O feed não tem <span className="text-[var(--pt-acc-soft)]">última página.</span>
           </h2>
           <p className="max-w-[40ch] text-[16px] leading-[1.55] text-[var(--pt-mute-dark)] md:text-[18px]">
             Quem para é você. O Porteiro transforma cada abertura numa sessão com começo, motivo e hora pra acabar, e o resto do feed fica enrolado.

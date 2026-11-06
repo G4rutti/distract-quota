@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ArrowDown, GithubLogo } from "@phosphor-icons/react";
 import { Wordmark } from "./logo";
+import { onGateOpen } from "./intro-gate";
 
 const HOLD_MS = 10_000;
 const TAU = Math.PI * 2;
@@ -68,7 +69,7 @@ export function Hero({ repo }: { repo: string }) {
       const p = progress.current;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, w, h);
-      const ink = "#141110";
+      const ink = "#16181D";
       const hand = "#FCFCFD";
       const cxB = w / 2;
       for (const d of dials) {
@@ -121,14 +122,26 @@ export function Hero({ repo }: { repo: string }) {
     };
   }, []);
 
-  // ── entrada do texto
+  // ── entrada do texto: espera a porta de abertura terminar de abrir
   useEffect(() => {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const ctx = gsap.context(() => {
-      gsap.from("[data-h-line] > span", { yPercent: 105, duration: 1.1, ease: "expo.out", stagger: 0.09, delay: 0.1 });
-      gsap.from("[data-h-fade]", { opacity: 0, y: 14, duration: 0.9, ease: "expo.out", stagger: 0.08, delay: 0.55 });
+    let ctx: gsap.Context | undefined;
+    const hide = gsap.context(() => {
+      gsap.set("[data-h-line] > span", { yPercent: 105 });
+      gsap.set("[data-h-fade]", { opacity: 0, y: 14 });
     }, root);
-    return () => ctx.revert();
+    const off = onGateOpen((late) => {
+      ctx = gsap.context(() => {
+        const d = late ? 0.1 : 0.55; // vindo da porta, entra enquanto as folhas abrem
+        gsap.to("[data-h-line] > span", { yPercent: 0, duration: 1.1, ease: "expo.out", stagger: 0.09, delay: d });
+        gsap.to("[data-h-fade]", { opacity: 1, y: 0, duration: 0.9, ease: "expo.out", stagger: 0.08, delay: d + 0.45 });
+      }, root);
+    });
+    return () => {
+      off();
+      ctx?.revert();
+      hide.revert();
+    };
   }, []);
 
   // ── segurar por 10s
@@ -188,17 +201,17 @@ export function Hero({ repo }: { repo: string }) {
 
       <header className="pt-wrap flex h-[68px] items-center justify-between gap-4 pt-[env(safe-area-inset-top)]">
         <a href="#" aria-label="Porteiro, início" className="rounded-md">
-          <Wordmark accent="var(--pt-paper)" />
+          <Wordmark />
         </a>
         <nav aria-label="Principal" className="flex items-center gap-1 text-[15px] font-medium sm:gap-2">
-          <a href="#porta" className="hidden min-h-11 items-center rounded-full px-3 hover:bg-[oklch(0_0_0/0.08)] sm:flex">
+          <a href="#porta" className="hidden min-h-11 items-center rounded-full px-3 hover:bg-[var(--pt-fog)] sm:flex">
             A porta
           </a>
-          <a href={repo} className="flex min-h-11 items-center gap-1.5 rounded-full px-3 hover:bg-[oklch(0_0_0/0.08)]">
+          <a href={repo} className="flex min-h-11 items-center gap-1.5 rounded-full px-3 hover:bg-[var(--pt-fog)]">
             <GithubLogo size={18} weight="bold" aria-hidden />
             <span className="hidden sm:inline">GitHub</span>
           </a>
-          <a href="/login" className="flex min-h-11 items-center rounded-full border-2 border-[var(--pt-ink)] px-4 font-semibold">
+          <a href="/login" className="flex min-h-11 items-center rounded-full bg-[var(--pt-ink)] px-5 font-semibold text-[var(--pt-paper)]">
             Entrar
           </a>
         </nav>
@@ -211,13 +224,13 @@ export function Hero({ repo }: { repo: string }) {
           </span>
           <span data-h-line className="pt-line">
             <span>
-              entre você <span className="text-[var(--pt-paper)]">e o feed.</span>
+              entre você <span className="text-[var(--pt-acc-deep)]">e o feed.</span>
             </span>
           </span>
         </h1>
 
         <div className="mt-8 flex flex-col gap-7 md:mt-10 md:flex-row md:items-end md:justify-between">
-          <p data-h-fade className="max-w-[44ch] text-[18px] leading-[1.5] font-medium">
+          <p data-h-fade className="max-w-[44ch] text-[18px] leading-[1.55] text-[var(--pt-mute)]">
             Sem passe, o Porteiro abre por cima do TikTok, do Instagram e do X. Você espera, diz pra quê vai entrar e por quanto tempo. Aí abre.
           </p>
 
@@ -255,7 +268,7 @@ export function Hero({ repo }: { repo: string }) {
                     cx="20"
                     cy="20"
                     r="15"
-                    stroke="var(--pt-red)"
+                    stroke="var(--pt-acc-soft)"
                     strokeLinecap="round"
                     strokeDasharray={`${(shown * 94.25).toFixed(2)} 94.25`}
                     transform="rotate(-90 20 20)"
@@ -266,7 +279,7 @@ export function Hero({ repo }: { repo: string }) {
                 </span>
               </button>
             )}
-            <a href={repo} className="pt-btn border-2 border-[var(--pt-ink)] hover:bg-[var(--pt-ink)] hover:text-[var(--pt-red)]">
+            <a href={repo} className="pt-btn border-2 border-[var(--pt-line)] hover:border-[var(--pt-ink)]">
               <GithubLogo size={18} weight="bold" aria-hidden /> Ver o código
             </a>
           </div>

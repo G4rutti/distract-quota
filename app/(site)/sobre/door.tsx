@@ -9,9 +9,9 @@ import { Mark } from "./logo";
 
 type AppKey = "tiktok" | "instagram" | "x";
 const APPS: { key: AppKey; name: string; letter: string; bg: string }[] = [
-  { key: "tiktok", name: "TikTok", letter: "T", bg: "#141110" },
-  { key: "instagram", name: "Instagram", letter: "I", bg: "#5b5655" },
-  { key: "x", name: "X", letter: "X", bg: "#2a2524" },
+  { key: "tiktok", name: "TikTok", letter: "T", bg: "#16181D" },
+  { key: "instagram", name: "Instagram", letter: "I", bg: "#4B5160" },
+  { key: "x", name: "X", letter: "X", bg: "#2A2E36" },
 ];
 
 type Step = "home" | "wait" | "why" | "pass";
@@ -75,7 +75,7 @@ export function Door({ wait, intents, minutes }: { wait: number; intents: string
             style={{ opacity: k === idx ? 1 : 0.38 }}
             aria-current={k === idx ? "step" : undefined}
           >
-            <span className="pt-mono pt-1 text-[13px] text-[var(--pt-red)]">0{k + 1}</span>
+            <span className="pt-mono pt-1 text-[13px] text-[var(--pt-acc-soft)]">0{k + 1}</span>
             <span className="flex flex-col gap-2">
               <span className="pt-display text-[clamp(2rem,3.6vw,2.9rem)]">{s.title}</span>
               <span className="max-w-[42ch] text-[16px] leading-[1.55] text-[var(--pt-mute-dark)]">{s.body}</span>
@@ -123,7 +123,7 @@ export function Door({ wait, intents, minutes }: { wait: number; intents: string
                 <DotCount seconds={left} total={wait} size={210} />
                 <p className="text-[14px] leading-[1.5] text-[var(--pt-mute)]">
                   Da última vez tu pediu <span className="pt-mono text-[var(--pt-ink)]">10</span> min e ficou{" "}
-                  <span className="pt-mono font-semibold text-[var(--pt-red-deep)]">34</span>.
+                  <span className="pt-mono font-semibold text-[var(--pt-acc-deep)]">34</span>.
                 </p>
               </div>
             )}
@@ -150,7 +150,7 @@ export function Door({ wait, intents, minutes }: { wait: number; intents: string
                   type="button"
                   onClick={release}
                   disabled={!intent || !mins}
-                  className="pt-btn mt-auto w-full justify-center bg-[var(--pt-red)] text-[var(--pt-ink)] disabled:bg-[var(--pt-fog)] disabled:text-[var(--pt-mute)]"
+                  className="pt-btn mt-auto w-full justify-center bg-[var(--pt-ink)] text-[var(--pt-paper)] disabled:bg-[var(--pt-fog)] disabled:text-[var(--pt-mute)]"
                 >
                   Liberar {mins ? `${mins} min` : ""}
                 </button>
@@ -161,12 +161,12 @@ export function Door({ wait, intents, minutes }: { wait: number; intents: string
               <div className="flex h-[calc(100%-40px)] flex-col px-6 pb-6 pt-8">
                 <p className="pt-label">Passe · {app.name}</p>
                 <p className="pt-display mt-4 text-[64px]">Liberado</p>
-                <p className="pt-display text-[64px] text-[var(--pt-paper)]">até {until}</p>
+                <p className="pt-display text-[64px] opacity-80">até {until}</p>
                 <p className="mt-5 text-[15px] leading-[1.5]">
                   {intent}. {mins} minutos. Depois disso a porta volta a fechar sozinha.
                 </p>
                 <div className="mt-auto flex flex-col gap-2">
-                  <span className="pt-btn w-full cursor-default justify-center bg-[var(--pt-ink)] text-[var(--pt-paper)]">
+                  <span className="pt-btn w-full cursor-default justify-center bg-[var(--pt-paper)] text-[var(--pt-ink)]">
                     Abrir o {app.name} <ArrowUpRight size={18} weight="bold" aria-hidden />
                   </span>
                   <button type="button" onClick={() => setStep("home")} className="pt-btn w-full justify-center">

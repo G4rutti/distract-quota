@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
 
 type P = { x: number; y: number; tx: number; ty: number; a: number; ta: number };
 
-export function DotCount({ seconds, total = 10, size = 220, color = "#141110", accent = "#F2471E" }: {
+export function DotCount({ seconds, total = 10, size = 220, color = "#16181D", accent = "#2F7BEF" }: {
   seconds: number;
   total?: number;
   size?: number;
@@ -99,7 +99,7 @@ export function DotCount({ seconds, total = 10, size = 220, color = "#141110", a
       for (let i = 0; i < 60; i++) {
         const ang = (i / 60) * Math.PI * 2 - Math.PI / 2;
         const on = i / 60 < left;
-        ctx.fillStyle = on ? accent : "rgba(20,17,16,0.14)";
+        ctx.fillStyle = on ? accent : "rgba(22,24,29,0.14)";
         ctx.beginPath();
         ctx.arc(size / 2 + Math.cos(ang) * ringR, size / 2 + Math.sin(ang) * ringR, on ? 2.2 : 1.6, 0, Math.PI * 2);
         ctx.fill();

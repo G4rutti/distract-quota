@@ -12,7 +12,7 @@ type Props = {
   title?: string;
 };
 
-export function Mark({ size = 28, ink = "currentColor", accent = "var(--pt-red)", deg = 60, className, title }: Props) {
+export function Mark({ size = 28, ink = "currentColor", accent = "var(--pt-acc)", deg = 60, className, title }: Props) {
   return (
     <svg
       viewBox={MARK.viewBox}
