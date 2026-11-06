@@ -7,7 +7,7 @@ import { useEffect, useRef } from "react";
 
 type P = { x: number; y: number; tx: number; ty: number; a: number; ta: number };
 
-export function DotCount({ seconds, total = 10, size = 220, color = "#16181D", accent = "#2F7BEF" }: {
+export function DotCount({ seconds, total = 10, size = 220, color = "#16181D", accent = "#2F751D" }: {
   seconds: number;
   total?: number;
   size?: number;

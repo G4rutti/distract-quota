@@ -3,7 +3,7 @@
 // Tudo num viewBox 0 0 64 64, pra o ícone do app, a landing e a extensão usarem o mesmo desenho.
 
 export const BRAND = {
-  accent: "#2F7BEF",
+  accent: "#2F751D", // o verde do app (tema claro)
   ink: "#0D0F13",
   paper: "#FBFCFD",
 };

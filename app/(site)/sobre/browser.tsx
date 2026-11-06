@@ -91,7 +91,7 @@ export function Browser({ wait }: { wait: number }) {
         </div>
         {/* a porta */}
         <div
-          className="absolute inset-0 flex flex-col items-start justify-end gap-3 bg-[var(--pt-ink)] p-6 text-[var(--pt-paper)] sm:p-8"
+          className="absolute inset-0 flex flex-col items-start justify-end gap-3 bg-[var(--pt-acc)] p-6 text-[var(--pt-paper)] sm:p-8"
           style={{
             transform: gate ? "translateY(0)" : "translateY(-101%)",
             transition: "transform 650ms var(--pt-ease)",
@@ -99,9 +99,9 @@ export function Browser({ wait }: { wait: number }) {
         >
           <span className="pt-label">Porteiro · {typed}</span>
           <span className="pt-display text-[clamp(3rem,6vw,5rem)]">
-            Espera <span className="tabular-nums text-[var(--pt-acc-soft)]">{Math.max(0, left)}</span>s
+            Espera <span className="tabular-nums text-[var(--pt-paper)] opacity-75">{Math.max(0, left)}</span>s
           </span>
-          <span className="max-w-[36ch] text-[15px] leading-[1.5] text-[var(--pt-mute-dark)]">O passe liberado no celular vale aqui também, e o tempo soma no mesmo limite.</span>
+          <span className="max-w-[36ch] text-[15px] leading-[1.5] opacity-90">O passe liberado no celular vale aqui também, e o tempo soma no mesmo limite.</span>
         </div>
       </div>
     </div>

@@ -71,14 +71,14 @@ export function Door({ wait, intents, minutes }: { wait: number; intents: string
         {STEPS.map((s, k) => (
           <li
             key={s.key}
-            className="grid grid-cols-[3.2rem_minmax(0,1fr)] gap-x-3 border-t border-[var(--pt-line-dark)] py-6 transition-opacity duration-300"
+            className="grid grid-cols-[3.2rem_minmax(0,1fr)] gap-x-3 border-t border-[var(--pt-line)] py-6 transition-opacity duration-300"
             style={{ opacity: k === idx ? 1 : 0.38 }}
             aria-current={k === idx ? "step" : undefined}
           >
-            <span className="pt-mono pt-1 text-[13px] text-[var(--pt-acc-soft)]">0{k + 1}</span>
+            <span className="pt-mono pt-1 text-[13px] text-[var(--pt-acc)]">0{k + 1}</span>
             <span className="flex flex-col gap-2">
               <span className="pt-display text-[clamp(2rem,3.6vw,2.9rem)]">{s.title}</span>
-              <span className="max-w-[42ch] text-[16px] leading-[1.55] text-[var(--pt-mute-dark)]">{s.body}</span>
+              <span className="max-w-[42ch] text-[16px] leading-[1.55] text-[var(--pt-mute)]">{s.body}</span>
             </span>
           </li>
         ))}
@@ -123,7 +123,7 @@ export function Door({ wait, intents, minutes }: { wait: number; intents: string
                 <DotCount seconds={left} total={wait} size={210} />
                 <p className="text-[14px] leading-[1.5] text-[var(--pt-mute)]">
                   Da última vez tu pediu <span className="pt-mono text-[var(--pt-ink)]">10</span> min e ficou{" "}
-                  <span className="pt-mono font-semibold text-[var(--pt-acc-deep)]">34</span>.
+                  <span className="pt-mono font-semibold text-[var(--pt-ink)]">34</span>.
                 </p>
               </div>
             )}
@@ -150,7 +150,7 @@ export function Door({ wait, intents, minutes }: { wait: number; intents: string
                   type="button"
                   onClick={release}
                   disabled={!intent || !mins}
-                  className="pt-btn mt-auto w-full justify-center bg-[var(--pt-ink)] text-[var(--pt-paper)] disabled:bg-[var(--pt-fog)] disabled:text-[var(--pt-mute)]"
+                  className="pt-btn mt-auto w-full justify-center bg-[var(--pt-acc)] text-[var(--pt-paper)] disabled:bg-[var(--pt-fog)] disabled:text-[var(--pt-mute)]"
                 >
                   Liberar {mins ? `${mins} min` : ""}
                 </button>

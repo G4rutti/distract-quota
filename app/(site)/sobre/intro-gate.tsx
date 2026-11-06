@@ -75,8 +75,8 @@ export function IntroGate() {
       <div className="pt-door-seam" aria-hidden />
 
       <div className="pt-gate-inner">
-        <p className="flex items-center gap-2 text-[var(--pt-mute-dark)]">
-          <Mark size={22} ink="var(--pt-paper)" />
+        <p className="flex items-center gap-2 text-[var(--pt-mute)]">
+          <Mark size={22} ink="var(--pt-ink)" />
           <span className="pt-label">Porteiro</span>
         </p>
 
@@ -96,7 +96,7 @@ export function IntroGate() {
             <div className="pt-gate-fill" style={{ transform: `scaleX(${progress})` }} />
           </div>
           <div className="flex min-h-12 flex-wrap items-center justify-between gap-4 text-left">
-            <p className="text-[14px] text-[var(--pt-mute-dark)]">É o mesmo tempo que o TikTok espera.</p>
+            <p className="text-[14px] text-[var(--pt-mute)]">É o mesmo tempo que o TikTok espera.</p>
             <button ref={btn} type="button" onClick={open} disabled={phase === "closed"} className="pt-btn pt-gate-btn">
               {phase === "closed" ? `Liberando em ${left}s` : "Entrar"}
             </button>

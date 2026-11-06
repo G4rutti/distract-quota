@@ -1,13 +1,13 @@
 /* Landing v2 do Porteiro.
-   Direção: preto frio e branco, um azul só como sinal (palavra-chave, setor da logo, progresso).
+   Direção: tudo claro, com o verde do app (o mesmo do "passe liberado") como único acento.
    Display condensada pesada (Sofia Sans Extra Condensed), texto em Onest, números em Martian Mono.
    Fica isolada do painel: tudo aqui vive sob .pt-site. */
 
 .pt-site {
-  /* azul sinal: acc no fundo/ícone, acc-deep pra texto no claro, acc-soft pra texto no escuro */
-  --pt-acc: oklch(0.6 0.19 259);
-  --pt-acc-deep: oklch(0.5 0.19 261);
-  --pt-acc-soft: oklch(0.76 0.12 255);
+  /* o verde do app (globals.css, tema claro): acc em botão/ícone/destaque, acc-deep no hover */
+  --pt-acc: oklch(0.5 0.14 140);
+  --pt-acc-deep: oklch(0.44 0.13 140);
+  --pt-acc-soft: oklch(0.5 0.14 140 / 0.12);
   --pt-ink: oklch(0.17 0.008 262);
   --pt-ink-2: oklch(0.22 0.009 262);
   --pt-paper: oklch(0.99 0.002 250);
@@ -32,7 +32,7 @@
 }
 
 .pt-site ::selection {
-  background: var(--pt-ink);
+  background: var(--pt-acc);
   color: var(--pt-paper);
 }
 
@@ -95,49 +95,6 @@
   transform: translateY(2px);
 }
 
-/* ---------- hero ---------- */
-.pt-hero {
-  position: relative;
-  background: var(--pt-paper);
-  color: var(--pt-ink);
-  isolation: isolate;
-  overflow: clip;
-}
-.pt-hero-field {
-  position: relative;
-  flex: 1 1 auto;
-  min-height: max(220px, 28svh);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, #000 22%);
-  mask-image: linear-gradient(to bottom, transparent, #000 22%);
-}
-.pt-hero-field canvas {
-  position: absolute;
-  inset: 0;
-}
-.pt-hero-field canvas {
-  width: 100%;
-  height: 100%;
-  display: block;
-}
-
-.pt-hold {
-  position: relative;
-  background: var(--pt-ink);
-  color: var(--pt-paper);
-  padding-left: 8px;
-  touch-action: none;
-}
-.pt-hold-ring {
-  width: 40px;
-  height: 40px;
-  flex: none;
-}
-.pt-hold-ring circle {
-  fill: none;
-  stroke-width: 3;
-}
-
-/* ---------- headline com linhas que sobem ---------- */
 /* folga em cima pros acentos (Ê, Á) não serem cortados pelo clip da animação */
 .pt-line {
   display: block;
@@ -300,7 +257,7 @@
   display: grid;
   place-items: center;
   perspective: 1800px;
-  color: var(--pt-paper);
+  color: var(--pt-ink);
 }
 .pt-door {
   position: absolute;
@@ -315,19 +272,19 @@
 .pt-door-l {
   left: 0;
   transform-origin: left center;
-  background: linear-gradient(90deg, var(--pt-ink) 0%, var(--pt-ink-2) 100%);
+  background: linear-gradient(90deg, var(--pt-paper) 0%, var(--pt-fog) 100%);
 }
 .pt-door-r {
   right: 0;
   transform-origin: right center;
-  background: linear-gradient(270deg, var(--pt-ink) 0%, var(--pt-ink-2) 100%);
+  background: linear-gradient(270deg, var(--pt-paper) 0%, var(--pt-fog) 100%);
 }
 /* sombra que escurece a folha enquanto ela gira */
 .pt-door::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: oklch(0 0 0 / 0.5);
+  background: oklch(0.2 0.01 262 / 0.28);
   opacity: 0;
   transition: opacity 1.25s cubic-bezier(0.7, 0, 0.2, 1);
 }
@@ -340,16 +297,16 @@
   bottom: 0;
   left: 50%;
   width: 1px;
-  background: var(--pt-line-dark);
+  background: var(--pt-line);
   transition: opacity 300ms ease;
 }
 .pt-gate[data-phase="opening"] .pt-door-l {
   transform: rotateY(82deg);
-  box-shadow: 40px 0 80px oklch(0 0 0 / 0.3);
+  box-shadow: 40px 0 80px oklch(0.2 0.01 262 / 0.18);
 }
 .pt-gate[data-phase="opening"] .pt-door-r {
   transform: rotateY(-82deg);
-  box-shadow: -40px 0 80px oklch(0 0 0 / 0.3);
+  box-shadow: -40px 0 80px oklch(0.2 0.01 262 / 0.18);
 }
 .pt-gate[data-phase="opening"] .pt-door-seam,
 .pt-gate[data-phase="opening"] .pt-gate-inner {
@@ -391,7 +348,7 @@
 .pt-gate-track {
   height: 3px;
   border-radius: 3px;
-  background: var(--pt-line-dark);
+  background: var(--pt-line);
   overflow: hidden;
 }
 .pt-gate-fill {
@@ -401,14 +358,14 @@
   transition: transform 1s linear;
 }
 .pt-gate-btn {
-  background: var(--pt-paper);
-  color: var(--pt-ink);
+  background: var(--pt-acc);
+  color: var(--pt-paper);
   min-height: 48px;
 }
 .pt-gate-btn:disabled {
   background: transparent;
-  color: var(--pt-mute-dark);
-  box-shadow: inset 0 0 0 1.5px var(--pt-line-dark);
+  color: var(--pt-mute);
+  box-shadow: inset 0 0 0 1.5px var(--pt-line);
 }
 .pt-gate[data-phase="ready"] .pt-gate-btn {
   animation: pt-pulse 1.6s ease-in-out infinite;
@@ -416,7 +373,7 @@
 @keyframes pt-pulse {
   0%,
   100% {
-    box-shadow: 0 0 0 0 oklch(0.6 0.19 259 / 0.45);
+    box-shadow: 0 0 0 0 oklch(0.5 0.14 140 / 0.35);
   }
   50% {
     box-shadow: 0 0 0 10px transparent;

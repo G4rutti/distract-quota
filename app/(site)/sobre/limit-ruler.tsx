@@ -51,7 +51,7 @@ export function LimitRuler({ weeks, start, floor, cut }: { weeks: number[]; star
             </p>
           </div>
           <p className="flex items-end gap-3" aria-live="polite">
-            <span className="pt-display text-[clamp(8rem,20vw,15rem)] leading-[0.78] tabular-nums text-[var(--pt-acc-deep)]">{limit}</span>
+            <span className="pt-display text-[clamp(8rem,20vw,15rem)] leading-[0.78] tabular-nums text-[var(--pt-acc)]">{limit}</span>
             <span className="flex flex-col pb-2 text-[15px] font-medium leading-tight">
               <span>min por app</span>
               <span className="pt-mono text-[var(--pt-mute)]">semana {k + 1}</span>
@@ -103,7 +103,7 @@ export function LimitRuler({ weeks, start, floor, cut }: { weeks: number[]; star
         <ol className="pt-mono flex flex-wrap gap-x-5 gap-y-2 text-[12px]" aria-label="Limite por semana">
           {weeks.map((m, i) => (
             <li key={i} className="transition-colors duration-300" style={{ color: i === k ? "var(--pt-ink)" : "var(--pt-mute)" }}>
-              S{i + 1} <span className={i === k ? "text-[var(--pt-acc-deep)]" : ""}>{m}</span>
+              S{i + 1} <span className={i === k ? "text-[var(--pt-acc)]" : ""}>{m}</span>
             </li>
           ))}
         </ol>

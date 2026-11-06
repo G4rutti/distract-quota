@@ -16,8 +16,8 @@ const HANDLES = [
 const PITCH = 72; // altura do post + espaço
 const R = 86; // raio do rolo
 
-// Cinzas frios e um ou outro azul: thumbnails abstratos, sem foto de ninguém.
-const THUMB = ["#2A2E36", "#4B5160", "#8E94A0", "#C9CDD4", "#2F7BEF", "#3A3F4A", "#6B7180", "#B1B6BF"];
+// Cinzas frios e um ou outro verde: thumbnails abstratos, sem foto de ninguém.
+const THUMB = ["#2A2E36", "#4B5160", "#8E94A0", "#C9CDD4", "#2F751D", "#3A3F4A", "#6B7180", "#B1B6BF"];
 
 export function FeedRoll() {
   const section = useRef<HTMLElement>(null);
@@ -53,7 +53,7 @@ export function FeedRoll() {
           tf = `translate3d(0px, ${y.toFixed(1)}px, ${z.toFixed(1)}px) rotateX(${((phi * 180) / Math.PI).toFixed(1)}deg)`;
           el.style.opacity = layer > 3 ? "0" : "1";
           // sombra do cilindro: escurece conforme o post vai pra trás do rolo
-          el.style.filter = `brightness(${(0.5 + 0.5 * Math.max(0, Math.cos(phi))).toFixed(2)})`;
+          el.style.filter = `brightness(${(0.78 + 0.22 * Math.max(0, Math.cos(phi))).toFixed(2)})`;
         }
         el.style.transform = tf;
       });
@@ -86,19 +86,19 @@ export function FeedRoll() {
   }, []);
 
   return (
-    <section id="feed" ref={section} className="relative h-[260vh] bg-[var(--pt-ink)] text-[var(--pt-paper)]" aria-labelledby="pt-feed-h">
+    <section id="feed" ref={section} className="relative h-[260vh] bg-[var(--pt-fog)] text-[var(--pt-ink)]" aria-labelledby="pt-feed-h">
       <div className="sticky top-0 h-[100svh] overflow-clip">
       <div className="pt-wrap flex h-full flex-col md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
         <div className="relative z-10 flex flex-col justify-center gap-5 pt-16 md:gap-6 md:pt-0">
-          <p className="pt-label text-[var(--pt-mute-dark)]">01 · O problema</p>
+          <p className="pt-label text-[var(--pt-mute)]">01 · O problema</p>
           <h2 id="pt-feed-h" className="pt-display text-[clamp(3rem,8vw,7.4rem)]">
-            O feed não tem <span className="text-[var(--pt-acc-soft)]">última página.</span>
+            O feed não tem <span className="text-[var(--pt-acc)]">última página.</span>
           </h2>
-          <p className="max-w-[40ch] text-[16px] leading-[1.55] text-[var(--pt-mute-dark)] md:text-[18px]">
+          <p className="max-w-[40ch] text-[16px] leading-[1.55] text-[var(--pt-mute)] md:text-[18px]">
             Quem para é você. O Porteiro transforma cada abertura numa sessão com começo, motivo e hora pra acabar, e o resto do feed fica enrolado.
           </p>
-          <p className="pt-mono text-[13px] text-[var(--pt-mute-dark)]" aria-hidden>
-            <span className="text-[var(--pt-paper)]">{String(wound).padStart(2, "0")}</span> / {HANDLES.length} posts enrolados
+          <p className="pt-mono text-[13px] text-[var(--pt-mute)]" aria-hidden>
+            <span className="text-[var(--pt-ink)]">{String(wound).padStart(2, "0")}</span> / {HANDLES.length} posts enrolados
           </p>
         </div>
 
