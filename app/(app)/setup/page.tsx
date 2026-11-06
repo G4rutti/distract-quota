@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { BrandMark } from "@/components/brand-mark";
 import { headers } from "next/headers";
 import { APPS, APP_IDS } from "@/lib/config";
 import { KEY_HEADER } from "@/lib/auth";
@@ -14,8 +15,8 @@ export default async function SetupPage() {
   return (
     <main className="flex flex-col gap-10">
       <header className="flex items-baseline justify-between">
-        <Link href="/" className="text-sm font-semibold tracking-tight">
-          Porteiro
+        <Link href="/" className="flex items-center gap-2 text-sm font-semibold tracking-tight">
+          <BrandMark size={18} /> Porteiro
         </Link>
       </header>
 
