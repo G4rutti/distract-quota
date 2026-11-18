@@ -81,7 +81,21 @@ export function buildSessions(events: EventRow[], now: number, passes: PassWindo
       // o passe nasce segundos antes do "abriu"; folga de 1 min pra relógio e atraso do atalho
       if (from <= start + MIN && until > start) best = Math.max(best, until);
     }
-    return Number.isFinite(best) ? best : start + NO_PASS_FALLBACK_MIN * MIN;
+    if (!Number.isFinite(best)) return start + NO_PASS_FALLBACK_MIN * MIN;
+    // pediu mais minutos pela notificação: o passe novo nasce colado no fim do anterior e estende a mesma sessão
+    for (let grew = true; grew; ) {
+      grew = false;
+      for (const p of passes) {
+        if (p.app !== app) continue;
+        const from = Date.parse(p.created_at);
+        const until = Date.parse(p.expires_at);
+        if (from > start && from <= best + 5 * MIN && until > best) {
+          best = until;
+          grew = true;
+        }
+      }
+    }
+    return best;
   };
 
   const closeEstimated = (k: string, start: number, until: number) => {

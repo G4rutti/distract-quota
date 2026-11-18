@@ -11,7 +11,7 @@ const TABS = [
 ];
 
 // Some na porta e no login: ali a tela é uma coisa só.
-const HIDDEN = [/^\/login/, /^\/entrar\//];
+const HIDDEN = [/^\/login/, /^\/entrar\//, /^\/fim\//];
 
 export function TabBar() {
   const pathname = usePathname();

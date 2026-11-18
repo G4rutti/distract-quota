@@ -72,6 +72,8 @@ export const LIMITS = {
 
 /** Opções de tempo na tela de liberar. */
 export const MINUTE_OPTIONS = [5, 10, 15, 30] as const;
+/** Botões de "mais um pouco" na tela de quando o passe acaba (vinda da notificação). */
+export const EXTRA_MINUTE_OPTIONS = [5, 10] as const;
 
 /** Segundos de espera antes de poder liberar. */
 export const BREATH_SECONDS = 10;

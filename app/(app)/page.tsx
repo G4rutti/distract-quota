@@ -120,7 +120,10 @@ export default async function Hoje() {
 
       <LimitSchedule m={m} />
 
-      <footer className="text-sm text-muted">
+      <footer className="flex gap-5 text-sm text-muted">
+        <Link href="/setup#notificacoes" className="inline-flex min-h-11 items-center underline underline-offset-4">
+          Notificação
+        </Link>
         <Link href="/setup" className="inline-flex min-h-11 items-center underline underline-offset-4">
           Configurar atalhos
         </Link>

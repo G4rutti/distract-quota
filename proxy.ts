@@ -9,6 +9,8 @@ const PUBLIC = [
   /^\/api\/gate$/,
   /^\/api\/event$/,
   /^\/api\/pass-status$/,
+  /^\/api\/cron\/passes$/, // checa o CRON_SECRET
+  /^\/sw\.js$/,
   /^\/manifest\.webmanifest$/,
   /^\/(icon|apple-icon|opengraph-image)$/,
 ];

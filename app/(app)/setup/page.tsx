@@ -3,6 +3,8 @@ import { BrandMark } from "@/components/brand-mark";
 import { headers } from "next/headers";
 import { APPS, APP_IDS } from "@/lib/config";
 import { KEY_HEADER } from "@/lib/auth";
+import { PushSwitch } from "@/components/push";
+import { vapidPublicKey } from "@/lib/push";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +22,17 @@ export default async function SetupPage() {
         </Link>
       </header>
 
+      <section id="notificacoes" className="flex flex-col gap-3" aria-labelledby="setup-notif">
+        <h1 id="setup-notif" className="display text-[3.2rem]">Notificação</h1>
+        <p className="text-muted">
+          Quando um passe acabar e o app ainda estiver aberto no iPhone, chega um aviso. Tocando nele você escolhe: sair
+          ou pedir mais 5 ou 10 minutos.
+        </p>
+        <PushSwitch vapidKey={vapidPublicKey()} />
+      </section>
+
       <div className="flex flex-col gap-3">
-        <h1 className="display text-[3.2rem]">Atalhos do iPhone</h1>
+        <h2 className="display text-[3.2rem]">Atalhos do iPhone</h2>
         <p className="text-muted">
           Duas automações por app no Atalhos, aba Automação, tipo &quot;App&quot;. Marca &quot;Executar imediatamente&quot; e
           desliga &quot;Notificar ao executar&quot;.

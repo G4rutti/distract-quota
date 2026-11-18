@@ -1,4 +1,5 @@
 import "@fontsource-variable/sofia-sans-extra-condensed";
+import { PushKeeper } from "@/components/push";
 import { TabBar } from "@/components/tab-bar";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -9,6 +10,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {children}
       </div>
       <TabBar />
+      <PushKeeper />
     </>
   );
 }
