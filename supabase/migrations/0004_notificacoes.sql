@@ -12,8 +12,10 @@ revoke all on public.porteiro_push_subs from anon, authenticated;
 
 -- Cada passe avisa uma vez só.
 alter table public.porteiro_passes add column if not exists notified_at timestamptz;
+update public.porteiro_passes set notified_at = now() where notified_at is null and expires_at < now();
 
 -- O cron chama o app a cada minuto. O segredo fica em privado.config, igual aos lembretes do outro app.
+-- Antes: insert into privado.config (k, v) values ('porteiro_cron_secret', '<mesmo CRON_SECRET da Vercel>');
 create or replace function privado.chamar_porteiro_passes()
 returns void
 language plpgsql
