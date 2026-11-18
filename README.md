@@ -60,6 +60,8 @@ Atalhos > Automação > **+** > **App**. São duas automações por app (4 no to
      - Mostrar mais > Método: GET > Cabeçalhos: `x-porteiro-key` = seu `APP_SECRET`
   2. **Se** `Conteúdo de URL` **não contém** `liberado`
   3. dentro do Se: **Abrir URLs** `https://SEU-APP.vercel.app/entrar/tiktok`
+  4. no Caso Contrário: **Obter Números da Entrada** (Conteúdo de URL) e **Iniciar Timer** com esses números em
+     segundos. A resposta é `liberado 437` (segundos que faltam) e o timer do Relógio aparece na ilha dinâmica.
 
 ### "Quando o TikTok for fechado"
 

@@ -58,6 +58,11 @@ export default async function SetupPage() {
               <li>
                 Abrir URL: <Code>{`${base}/entrar/${id}`}</Code>
               </li>
+              <li>
+                No <strong className="text-text">Caso Contrário</strong> (liberado): Obter Números da Entrada, com o
+                Conteúdo da URL, e depois Iniciar Timer com esses Números em <strong className="text-text">segundos</strong>.
+                O timer do Relógio mostra na ilha dinâmica quanto falta do passe.
+              </li>
             </ol>
           </div>
 
