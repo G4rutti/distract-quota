@@ -45,13 +45,23 @@ export async function fetchEvents(sinceIso: string): Promise<EventRow[]> {
   }
 }
 
+/** Janela de um passe: o que basta pra saber até quando uma abertura liberada podia durar. */
+export type PassWindow = { app: string; created_at: string; expires_at: string };
+
+/** Sessão do iPhone sem "fechou" e sem passe achado conta no máximo isso. */
+const NO_PASS_FALLBACK_MIN = 10;
+
 /**
  * Abertura liberada + próximo fechamento do mesmo app NA MESMA ORIGEM = uma sessão.
  * iPhone e Chrome têm sessões independentes: TikTok aberto nos dois ao mesmo tempo conta nos dois.
- * Abertura sem fechamento (atalho de fechar falhou) vira sessão estimada com teto MAX_SESSION_MIN,
- * terminando no próximo evento daquele app, no teto ou agora, o que vier primeiro.
+ *
+ * Abertura sem fechamento:
+ * - iPhone: o atalho "ao fechar" falhou (app largado em segundo plano, tela bloqueada). A sessão termina
+ *   quando o passe que liberou a entrada acabou, nunca "até agora". Pediu 5 min e o atalho falhou = no máximo 5.
+ * - Chrome: a extensão manda o fechamento sozinha (com reenvio), então aberta sem fechar = em uso agora,
+ *   com teto de MAX_SESSION_MIN.
  */
-export function buildSessions(events: EventRow[], now: number): Session[] {
+export function buildSessions(events: EventRow[], now: number, passes: PassWindow[] = []): Session[] {
   const sessions: Session[] = [];
   const pending = new Map<string, number>(); // chave "app:origem"
   const cap = MAX_SESSION_MIN * MIN;
@@ -61,8 +71,23 @@ export function buildSessions(events: EventRow[], now: number): Session[] {
     return { app: app as AppId, source: source as Source };
   };
 
+  // fim de uma sessão do iPhone sem fechamento: o fim do passe válido na hora em que abriu
+  const passEnd = (app: string, start: number): number => {
+    let best = -Infinity;
+    for (const p of passes) {
+      if (p.app !== app) continue;
+      const from = Date.parse(p.created_at);
+      const until = Date.parse(p.expires_at);
+      // o passe nasce segundos antes do "abriu"; folga de 1 min pra relógio e atraso do atalho
+      if (from <= start + MIN && until > start) best = Math.max(best, until);
+    }
+    return Number.isFinite(best) ? best : start + NO_PASS_FALLBACK_MIN * MIN;
+  };
+
   const closeEstimated = (k: string, start: number, until: number) => {
-    const end = Math.min(until, start + cap);
+    const { app, source } = split(k);
+    const limit = source === "chrome" ? start + cap : passEnd(app, start);
+    const end = Math.min(until, limit);
     if (end > start) sessions.push({ ...split(k), start, end, minutes: (end - start) / MIN, live: end === now });
   };
 
@@ -131,6 +156,22 @@ export type LastPass = {
 };
 
 /** Versão leve pra tela de entrada: só o necessário pro lembrete, sem os 31 dias. */
+/** Janelas dos passes desde um instante (pra fechar sessões do iPhone que perderam o "fechou"). */
+export async function fetchPassWindows(fromMs: number): Promise<PassWindow[]> {
+  const rows: PassWindow[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await db()
+      .from("porteiro_passes")
+      .select("app, created_at, expires_at")
+      .gte("expires_at", new Date(fromMs).toISOString())
+      .order("created_at", { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) return rows;
+    rows.push(...(data as PassWindow[]));
+  }
+}
+
 export async function getEntryInfo(
   app: AppId,
 ): Promise<{ todayMinutes: number; limit: number; last: LastPass | null }> {
@@ -152,7 +193,8 @@ export async function getEntryInfo(
 
   // pega a partir de algumas horas antes, pra uma sessão que começou antes do recorte ainda ter o open
   const from = Math.min(todayStart, pass ? Date.parse(pass.created_at) : todayStart) - MAX_SESSION_MIN * MIN;
-  const sessions = buildSessions(await fetchEvents(new Date(from).toISOString()), nowMs);
+  const [events, windows] = await Promise.all([fetchEvents(new Date(from).toISOString()), fetchPassWindows(from)]);
+  const sessions = buildSessions(events, nowMs, windows);
   const todayMinutes = sessions.reduce((sum, s) => {
     const part = splitByDay(s).find(([k]) => k === todayKey);
     return sum + (part ? part[1] : 0);

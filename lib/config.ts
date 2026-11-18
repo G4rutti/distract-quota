@@ -76,7 +76,7 @@ export const MINUTE_OPTIONS = [5, 10, 15, 30] as const;
 /** Segundos de espera antes de poder liberar. */
 export const BREATH_SECONDS = 10;
 
-/** Abertura sem 'close' (atalho de fechar falhou) conta no máximo isso. Sessão com close não tem teto. */
+/** Chrome: abertura sem 'close' conta no máximo isso. No iPhone o teto é o fim do passe (ver buildSessions). */
 export const MAX_SESSION_MIN = 180;
 
 export const TIMEZONE = "America/Sao_Paulo";

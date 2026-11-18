@@ -2,7 +2,7 @@ import "server-only";
 import { APP_IDS, TIMEZONE, type AppId } from "./config";
 import { db, type EventRow, type PassRow } from "./db";
 import { daysBetween, daysUntilNextWeek, perAppLimit, totalLimit, weekIndex } from "./limits";
-import { buildSessions, DAY, dayKey, fetchEvents, hourOf, MIN, minutesByDay, splitByDay, weekdayFmt } from "./stats";
+import { buildSessions, DAY, dayKey, fetchEvents, fetchPassWindows, hourOf, MIN, minutesByDay, splitByDay, weekdayFmt } from "./stats";
 
 // Um modelo só, calculado a cada request, que alimenta as 5 telas. Pra um usuário e semanas de dado, é rápido.
 
@@ -90,17 +90,18 @@ export async function getModel(): Promise<Model> {
   const fetchFrom = noonOf(addDays(historyStart, -1)).getTime() - 12 * 60 * MIN;
   const passesFrom = noonOf(addDays(windowStart, -1)).getTime() - 12 * 60 * MIN;
 
-  const [events, passRows] = await Promise.all([
+  const [events, passRows, passWindows] = await Promise.all([
     fetchEvents(new Date(fetchFrom).toISOString()),
     db()
       .from("porteiro_passes")
       .select("*")
       .gte("created_at", new Date(passesFrom).toISOString())
       .order("created_at", { ascending: false }),
+    fetchPassWindows(fetchFrom),
   ]);
   if (passRows.error) throw passRows.error;
 
-  const sessions = buildSessions(events, nowMs);
+  const sessions = buildSessions(events, nowMs, passWindows);
   const allMinutes = minutesByDay(sessions); // histórico inteiro, por dia
 
   // ---- dias ----
