@@ -8,7 +8,8 @@ export const dynamic = "force-dynamic";
 /**
  * Chamado pela automação "Ao abrir o app" do Atalhos.
  * Responde texto puro pra ficar fácil comparar no "Se" do Atalhos:
- *   "liberado" -> tem passe válido, deixa abrir
+ *   "liberado 437" -> tem passe válido, deixa abrir; o número é quantos segundos faltam
+ *                     (o atalho usa pra iniciar um timer do Relógio, que aparece na ilha dinâmica)
  *   "barrado"  -> sem passe, o atalho abre o webapp por cima
  * Sempre registra a tentativa.
  */
@@ -25,9 +26,10 @@ export async function GET(req: NextRequest) {
   const now = new Date().toISOString();
   const { data: pass, error } = await db()
     .from("porteiro_passes")
-    .select("id")
+    .select("expires_at")
     .eq("app", app)
     .gt("expires_at", now)
+    .order("expires_at", { ascending: false })
     .limit(1)
     .maybeSingle();
 
@@ -41,7 +43,9 @@ export async function GET(req: NextRequest) {
   const { error: insertError } = await db().from("porteiro_events").insert({ app, kind: "open", allowed, at: now, source: parseSource(req.nextUrl.searchParams.get("src")) });
   if (insertError) console.error("gate: erro gravando evento", insertError);
 
-  return text(allowed ? "liberado" : "barrado");
+  if (!allowed) return text("barrado");
+  const left = Math.max(1, Math.round((Date.parse((pass as { expires_at: string }).expires_at) - Date.parse(now)) / 1000));
+  return text(`liberado ${left}`);
 }
 
 function text(body: string) {
