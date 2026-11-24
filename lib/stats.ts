@@ -50,10 +50,14 @@ export type PassWindow = { app: string; created_at: string; expires_at: string }
 
 /** Sessão do iPhone sem "fechou" e sem passe achado conta no máximo isso. */
 const NO_PASS_FALLBACK_MIN = 10;
+/** Folga depois do fim do passe numa sessão do iPhone (terminar o vídeo, achar o botão de sair). */
+const IPHONE_GRACE_MIN = 2;
 
 /**
  * Abertura liberada + próximo fechamento do mesmo app NA MESMA ORIGEM = uma sessão.
  * iPhone e Chrome têm sessões independentes: TikTok aberto nos dois ao mesmo tempo conta nos dois.
+ *
+ * iPhone com fechamento: conta no máximo até o fim do passe + 2 min (tela apagada não dispara o "fechou").
  *
  * Abertura sem fechamento:
  * - iPhone: o atalho "ao fechar" falhou (app largado em segundo plano, tela bloqueada). A sessão termina
@@ -120,8 +124,13 @@ export function buildSessions(events: EventRow[], now: number, passes: PassWindo
     const start = pending.get(k);
     if (start === undefined) continue; // close de uma abertura barrada
     pending.delete(k);
-    // sessão com close é real, sem teto: pediu 10 e ficou 4h tem que aparecer
-    sessions.push({ ...split(k), start, end: t, minutes: (t - start) / MIN, live: false });
+    // iPhone: o "fechou" pode chegar muito depois do uso de verdade. Tela que apaga sozinha com o app aberto
+    // não dispara nada no iOS, e o "fechou" só vem quando você sai do app depois de desbloquear.
+    // Então a sessão termina no fim do passe (com as extensões) + 2 min de folga.
+    // Chrome: a extensão sabe quando você parou de mexer, então o "fechou" dela vale como veio.
+    const { source } = split(k);
+    const end = source === "iphone" ? Math.min(t, passEnd(e.app, start) + IPHONE_GRACE_MIN * MIN) : t;
+    if (end > start) sessions.push({ ...split(k), start, end, minutes: (end - start) / MIN, live: false });
   }
 
   for (const [k, start] of pending) closeEstimated(k, start, now);
